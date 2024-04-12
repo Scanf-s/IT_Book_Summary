@@ -2,6 +2,8 @@
 
 컴퓨터에서 재귀는 반복되는 작업을 수행할 때, 우아하고 강력한 대안을 제공한다. 사실, 몇몇 프로그래밍 언어는 명시적으로 loop를 지원하지 않는 경우가 있는데, 이 경우에 재귀가 활용된다.
 
+<hr>
+
 # 4.1 Illustrative Examples
 
 ## 4.1.1 The Factorial Function
@@ -29,6 +31,8 @@ def factorial(n):
 각 인치마다, 숫자 라벨과 함께 하나의 tick을 놓는다. 이 tick을 **major tick**이라고 하고, 그 길이를 **major tick length**라고 하자. 
 
 두 인치들 사이에 있는 마크들을 **minor tick**이라고 하자. 1/2 지점에 하나, 1/4 지점에 하나, 1/8 지점에 하나씩 놓여있다. 이 tick 사이의 간격이 절반으로 줄어들 때 마다, tick 길이는 하나씩 줄어든다.
+
+<hr>
 
 ### A Recursive Approach to Ruler Drawing
 
