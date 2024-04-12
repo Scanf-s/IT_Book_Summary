@@ -13,8 +13,8 @@
 ```python
 def factorial(n):
 	if n == 0:
-    	return 1
-    else: return n * factorial(n - 1)
+		return 1
+	else: return n * factorial(n - 1)
 ```
 ![](https://velog.velcdn.com/images/calzone0404/post/14c80d69-5a88-4bdd-a0c4-ae3a4a837b16/image.png)
 
