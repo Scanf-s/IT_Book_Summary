@@ -321,7 +321,7 @@ int main(){
 ```
 
 ## 실행결과
-![](https://velog.velcdn.com/images/calzone0404/post/28679177-129a-49af-ad2a-c6c50b33df0d/image.png)
+![image](https://github.com/Scanf-s/CS_Book_Summary/assets/105439069/d0e96f48-2061-4f1b-ae7d-71c2709a80a5)
 
 ## SLL의 장단점
 ### 장점
