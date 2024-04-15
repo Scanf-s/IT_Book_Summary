@@ -217,7 +217,6 @@ def unique3(S, start, stop): # S[start:stop]에 중복되는 요소가 존재하
 ```
 딱 보면, 재귀 수행 시 중복되는 연산이 너무 많음을 볼 수 있다.
 만약 S의 size를 n이라고 했을때,
-
 - n = 1이라면, $O(1)$
 - n >= 2 이라면, 2 * (1 + 2 + $2^2$ + ... + $2^n$)이므로
 최종적인 시간복잡도는 $O(2^n)$인 매우 비효율적인 알고리즘이다.
@@ -252,7 +251,300 @@ def good_fib(n):
 
 ## 4.3.1 Maximum Recursive Depth in Python
 
+재귀를 사용함에 있어서, base condition에 도달하지 않고, 무한히 재귀 Loop를 도는 경우가 존재한다.
+이를 **infinite recursion**이라고 한다.
+
+만약 infinite recursion이 발생한다면, CPU자원과 Memory자원을 아주 빠르게 소비시킨다. 따라서, 이러한 infitinte recursion을 발생시키지 않기 위해, 프로그래머는 반드시 base condition과, 그에 도달하는 알고리즘을 잘 구성해두어야 한다.
+
+운이 좋게도, 파이썬에서는 infinite recursion을 방지하는 모듈을 지원한다.
+
+```python
+import sys
+
+old_recursion = sys.getrecursionlimit() # 현재 설정된 재귀함수 최대 깊이를 가져온다
+sys.setrecursionlimit(1000000) # 최대 재귀함수 깊이를 1000000으로 설정함
+```
+
+<hr>
+
+# 4.4 Further Examples of Recursion
+
+## 4.4.1 Linear Recursion
+
+재귀함수가 body 안에서 최대 한번만 새로운 재귀함수를 호출하는 경우, **Linear recursion**이라고 한다. 물론 우리가 이전에 구현해보았던 factorial, fibonacci, binary_search가 이에 해당한다.
+
+Linear recursion의 결과는 모든 recursion 경로를 단일 호출 sequence로 표현할 수 있다는 점이다.
+
+<hr>
+
+### Summing the Elements of a Sequence Recursively
+
+Linear Recursion은 데이터 배열을 다르는데 효율적인 도구가 될 수 있다. 예를 들면, 배열의 Summation 문제를 linear recursion을 이용해 풀어보도록 하자.
+
+- n : 배열 요소의 개수
+
+1. n = 0이면, 당연히 Summation S는 0이다.
+
+2. 2개의 원소의 총 합은 1개의 원소의 합 + 마지막 원소의 합이다.
+
+3. 3개의 원소의 총 합은 2개의 원소의 합 + 마지막 원소의 합이다.
+
+4. 따라서, n개의 원소의 총 합은 n-1개의 원소의 합 + 마지막 원소의 합이다.
+
+```python
+def linear_sum(arr, n):
+    if n == 0:
+        return 0
+    else:
+        return linear_sum(arr, n-1) + arr[n-1]
+```
+
+위 알고리즘의 시간복잡도를 구해보면, n개의 합을 구하기 위해 총 n회의 재귀 호출이 수행되므로, $O(n)$이다.
+
+![](https://velog.velcdn.com/images/calzone0404/post/d87b2edb-f1fa-497e-959a-37c7040de898/image.png)
+
+<hr>
+
+### Reversing a Sequence with Recursion
+
+이번에는 n size sequence를 뒤집는 알고리즘을 linear recursion를 통해 풀어보도록 하자.
+
+- 첫번째 요소와, 마지막 요소 (n-1)를 바꾼다.
+- 두번째 요소와, n-2번째 요소를 바꾼다....
+
+따라서 linear recursion을 이용하자면, 재귀적으로 첫번째 index와 last index를 좁혀나가며 구해나가면 된다.
+
+이때, base condition으로, 
+- 만약 Sequence의 크기가 짝수라면 start == stop 인 경우 종료
+- 만약 Sequence의 크기가 홀수라면 start == stop - 1 인 경우 종료
+
+![](https://velog.velcdn.com/images/calzone0404/post/e9338fe0-3664-406e-84dd-109f76b5722f/image.png)
+위 사진은 array size 7에 대해 총 4회 연산을 수행하였다.
+따라서 위 알고리즘의 시간복잡도를 구해보면, array size n에 대해, floor(n/2) + 1 이므로, $O(n)$임을 알 수 있다.
+
+```python
+def reverse_array(arr, start, stop):
+    if start >= stop:
+        return arr
+    else:
+        arr[start], arr[stop] = arr[stop], arr[start]
+        return reverse_array(arr, start + 1, stop - 1)
+
+nums = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+reversed_arr = reverse_array(nums, 0, len(nums) - 1)
+print(reversed_arr)
+```
+![](https://velog.velcdn.com/images/calzone0404/post/be311be9-ecf6-402e-8a34-33331d3fcf43/image.png)
+
+### Recursive Algorithms for Computing Powers
+
+Linear recursion을 통해 거듭제곱 연산도 구현할 수 있다.
+즉, $power(x, n) = x^n$인 함수를 구할수 있다는 것이다.
+
+basic condition으로는, 지수법칙에 의해 n = 0일때 1이다.
+
+따라서 재귀 함수를 다음과 같이 표현할 수 있다.
+![](https://velog.velcdn.com/images/calzone0404/post/8c4ba059-3bb2-48de-b1ff-a14af9e4b444/image.png)
+
+```python
+def power(base, exponent):
+    if exponent == 0:
+        return 1
+    else:
+        return base ** power(base, exponent-1)
+```
+
+딱 코드를 보면, 재귀가 선형으로 호출되므로 $O(n)$이 걸린다는 것을 알 수 있다.
+
+**그런데, 위 알고리즘보다 더 빠르게 작동하는 알고리즘이 존재한다.**
+
+> $x^n = (x^k)^2$ 으로 표현하기 위해, k = floor(n/2)라고 해보자.
+>
+>만약 n이 짝수라면, floor(n/2) = $n/2$이므로
+>$(x^k)^2 = (x^\frac{n}{2})^2 = x^n$이다.
+>
+>만약 n이 홀수라면, floor(n/2) = $\frac{n-1}{2}$이므로,
+$(x^k)^2 = (x^\frac{n-1}{2})^2 = x^{n-1}$이다.
+>
+따라서, $x^n = x * (x^k)^2$이다.
+예를 들면, $2^{13} = 2 * 2^6 * 2^6$이다.
+
+![](https://velog.velcdn.com/images/calzone0404/post/3117e0c8-c569-4646-b17c-352af5abb11e/image.png)
+
+```python
+def power(x, n):
+    if n == 0:
+        return 1
+    else:
+        partial = power(x, n // 2)
+        result = partial * partial
+        if n % 2 == 1:
+            result *= x
+        return result
+
+print(power(2, 10))
+```
+![](https://velog.velcdn.com/images/calzone0404/post/8cf4209e-e592-4e8f-ae67-7ab17b40c475/image.png)
+
+![](https://velog.velcdn.com/images/calzone0404/post/8f26acca-0b64-4976-ac03-acd9591882d5/image.png)
+
+위 코드는 n을 2로 나누면서 진행하기 때문에, 수행횟수가 지수적으로 줄어들어, 시간복잡도는 $O(logn)$이다.
 
 
+## 4.4.2 Binary Recursion
 
+어떤 함수가 2회의 recursive 호출을 수행하면, **binary recursion**을 한다고 말한다. 예를들어, Drawing English ruler문제나, bad_fibonacci가 그 예시이다.
+
+4.4.1에서 구한 Sequence summation을 binary recursion으로 한번 구해보자.
+```python
+def binary_sum(S, start, stop): # S[start:stop]까지의 summation을 구한다
+    if start >= stop: # slice에 element가 존재하지 않는 경우
+        return 0
+    elif start == stop - 1: # slice에 element가 한개만 존재하는 경우
+        return S[start]
+    else:
+        mid = (start + stop) // 2 # 두 수의 mid index 기준으로 두 구역으로 나누어버림
+        return binary_sum(S, start, mid) + binary_sum(S, mid, stop)
+
+nums = [1, 2, 3, 4, 5, 6, 7, 8]
+print(binary_sum(nums, 0, len(nums)))
+```
+![](https://velog.velcdn.com/images/calzone0404/post/c07ddae4-9397-46e1-ba1f-9d1deb9cddf5/image.png)
+
+위 사진처럼, 범위가 재귀 호출마다 **절반으로 감소하므로** 재귀의 깊이는 $1 + log_{2}n$이다.
+
+따라서 위 알고리즘의 공간복잡도는 $O(logn)$이다. 기존 방식의 공간복잡도 $O(n)$에 비하면 매우 효율적임을 알 수 있다.
+
+하지만, 위 그림에서 볼 수 있다싶이 총 호출 수는 n = 8일때, 
+$2 * 8 - 1회 (15회)$이므로 시간복잡도는 $O(n)$이다.
+
+> 그럼에도 불구하고, 공간복잡도의 향상은 곧 스택메모리의 가용성을 향상시키므로 더 깊은 재귀 호출을 사용할 수 있게 된다.
+
+## 4.4.3 Multiple Recursion
+
+Binary recursion이 있다면 당연히 그 이상의 recursion도 존재한다. multiple recursion이 바로 그것이다.
+
+우리가 보았던 예시중에서는, Disk usage를 구하는 알고리즘이 바로 이것이다. 왜나하면, 디렉토리 내부에 존재하는 하위 디렉토리의 개수마다 재귀 호출 개수가 증가하기 때문이다.
+
+또 다른 새로운 예시로, Summation puzzles가 있다.
+
+> 합산 퍼즐 문제:
+각각의 문자에 하나의 숫자를 할당하여, 그 문자들로 구성된 단어를 숫자로 표현했을 때, 주어진 수학적 등식이 성립하는지 알아보는 문제이다.
+
+이해가 잘 되지 않으니 예를 한번 들어보자.
+![](https://velog.velcdn.com/images/calzone0404/post/fda1dcf9-7c60-4fa7-ade9-303122085c17/image.png)
+
+$pot + pan = bib$라는 합산 퀴즈가 있다고 해보자.
+
+나는 위 식의 각 문자에 대해 중복되지 않는 숫자를 mapping해보도록 하자 (마음대로 아무거나 넣어보도록 하자)
+$p = 5, o = 3, t = 4, a = 2, n = 6, b = 9, i = 1$
+
+이 할당에 따라 mapping을 수행하면 위 등식은 다음과 같이 계산된다.
+$pot = 534$
+$pan = 526$
+$bib = 919$
+
+이제 등식을 만족하는지 알아보자.
+534 + 526 = 1060인데, 919가 아니므로 이 숫자할당은 올바르지 않다는것을 알 수 있다.
+
+> 따라서, 이 문제를 해결하려면 가능한 모든 숫자 조합을 할당해보고 등식이 성립하는 알맞는 숫자 할당 조합을 찾는것이다.
+
+1. 각 문자에 가능한 모든 숫자 $U = \{0, 1, ..., 9\}$를 할당해본다.
+2. 할당된 숫자로 단어를 숫자로 변환한다.
+3. 변환된 숫자를 사용해서, 등식을 평가한다.
+4. 모든 가능한 조합을 시도해서 등식이 만족하는 조합을 찾는다.
+
+![](https://velog.velcdn.com/images/calzone0404/post/77cc329b-0ae2-408d-a225-0373844157fa/image.png)
+
+```python
+def puzzle_solver(k, S, U):
+    """ k: 몇 번 숫자를 뽑아야 하는지에 대한 index, S: 선택된 숫자 리스트, U: 선택 가능한 숫자 리스트 """
+    for i in range(len(U)):
+        v = U[i]
+        S.append(v)  # 선택된 숫자 v를 리스트 S에 추가
+        U_new = U[:i] + U[i+1:]  # v를 제외한 새로운 U 생성
+        if k == 1:  # 필요한 모든 숫자를 선택했으면
+            if checker(S):  # S를 검증
+                return "가능한 조합: {}".format(S)
+        else:
+            result = puzzle_solver(k - 1, S, U_new)  # 다음 숫자 선택을 위한 재귀 호출
+            if result: # result 결과가 None이 아니라면
+                return result
+        S.pop()  # 백트래킹: S에서 가장 최근에 넣은 숫자 제거
+
+    return None  # 해당 조합이 실패한경우 None
+
+
+def checker(S):
+    """ 주어진 S에 대해 'pot + pan = bib' 검증 """
+    mapping = dict(zip('pontiab', S))
+    pot = 100 * mapping['p'] + 10 * mapping['o'] + mapping['t']
+    pan = 100 * mapping['p'] + 10 * mapping['a'] + mapping['n']
+    bib = 100 * mapping['b'] + 10 * mapping['i'] + mapping['b']
+    return pot + pan == bib  # 계산된 값이 일치하는지 확인
+
+
+if __name__ == "__main__":
+    solution = puzzle_solver(7, [], list(range(10)))
+    if solution:
+        print(solution)
+    else:
+        print("실패")
+```
+![](https://velog.velcdn.com/images/calzone0404/post/ca30836f-25fa-4413-9f47-1fd3991f1203/image.png)
+
+# 4.5 Designing Recursive Algorithms
+
+재귀 알고리즘은 다음 규칙을 따른다.
+
+1. Base case 테스트를 해보자.
+재귀 알고리즘은 base case를 테스트하는것부터 시작한다. Base case를 테스트하면서 모든 재귀 호출이 base case로 들어오는지 확인해보아야 한다.
+
+2. 재귀
+base case가 아니라면, 하나 또는 그 이상의 재귀 호출을 수행하자. base case까지 도달하는 재귀호출문을 작성해야 한다.
+
+### Parameterizing a Recursion
+
+> 재귀적 알고리즘을 설계할 떄는 원래 문제와 같은 일반 구조를 가진 서브 문제들을 어떻게 정의해야할 지 생각해보아야한다.
+
+예를 들어서, 이진 탐색의 경우
+우리가 자연스럽게 생각나는 재귀 함수 형태는 아래와 같다
+```python
+binary_search(data, target)
+```
+위 코드는 low, high index가 존재하지 않기 때문에 리스트의 절반에 대한 탐색을 호출하는 유일한 방법은 새로운 리스트를 생성하는 방법 뿐이다.
+
+하지만 새로운 리스트를 형성하는 과정속에서 $O(n)$이 소요되므로 이진 탐색의 이점을 앗아간다.
+
+따라서 아래와 같이 추가적인 파라미터를 달아서 이진탐색의 장점을 가지는것이 바람직하다.
+```python
+binary_search(data, target, low, high)
+```
+
+# 4.6 Eliminating Tail Recursion
+
+> 이 챕터는 이해가 안되어서 Chat GPT의 도움을 받았습니다.
+
+Tail recursion은 재귀 함수의 매우 특별한 형태로, 재귀 호출이 함수의 마지막 명령어로 실행되는 경우를 말합니다. 이러한 구조는 함수의 반환 값이 재귀 호출의 결과와 직접적으로 연결되어 있어, 추가적인 연산 없이 그 결과를 바로 반환할 수 있습니다. Tail recursion의 주요 장점은 컴파일러나 인터프리터가 이를 최적화하여, 일반적인 재귀 호출에서 발생하는 스택 오버플로우 문제를 피할 수 있다는 것입니다.
+
+## Tail Recursion의 작동 방식
+일반적인 재귀 함수는 각 호출마다 스택 메모리에 새로운 실행 컨텍스트를 생성합니다. 이로 인해 깊은 재귀 호출이 발생할 경우, 시스템의 스택 메모리가 고갈되어 스택 오버플로우 에러를 유발할 수 있습니다. 그러나 tail recursion을 사용하면, 현재의 실행 컨텍스트를 재사용할 수 있어, 각 호출이 새로운 스택을 필요로 하지 않습니다.
+
+## Tail Recursion 최적화
+많은 현대 컴파일러와 인터프리터는 "tail call optimization" (TCO)을 지원하여, 재귀 호출을 일반적인 반복문(loop)으로 변환하여 실행합니다. 이 최적화는 재귀 함수가 자기 자신을 호출하는 대신, 실행 상태를 업데이트하고 함수 시작 지점으로 점프하는 것을 가능하게 합니다. 결과적으로 추가적인 스택 프레임을 생성하지 않고, 기존의 스택 프레임을 재활용함으로써 메모리 사용을 상당히 줄일 수 있습니다.
+
+## 예시: Factorial 함수
+Tail recursion을 활용한 팩토리얼 함수 예시입니다:
+
+```python
+def factorial(n, accumulator=1):
+    if n == 0:
+        return accumulator
+    else:
+        return factorial(n - 1, accumulator * n)
+```
+여기서 factorial 함수는 마지막에서 재귀 호출을 수행하며, 추가적인 연산 없이 결과를 바로 반환합니다. accumulator는 각 단계의 계산 결과를 캐리하며, 최종적으로 n이 0이 되면 그 값을 반환합니다.
+
+## 주의점
+모든 프로그래밍 언어나 환경이 tail call 최적화를 지원하는 것은 아니며, 예를 들어 Python은 공식적으로 이 최적화를 지원하지 않습니다. 따라서 Python과 같은 환경에서는 tail recursion이 꼭 필요한 경우, 반복문으로 리팩토링하는 것이 좋을 수 있습니다. Tail recursion이 이론적으로는 스택 오버플로우 문제를 해결할 수 있지만, 실제로는 최적화가 적용되지 않는 경우가 많으므로 주의가 필요합니다.
 
