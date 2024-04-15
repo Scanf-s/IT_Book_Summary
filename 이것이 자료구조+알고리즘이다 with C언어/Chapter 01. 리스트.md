@@ -82,7 +82,7 @@ Node* SLL_CreateNode(ElementType NewData){
 void SLL_AppendNode(Node** Head, Node* newNode){
     /**
      * 왜 Node** Head인가???
-     * 더블포인터변수 A -> A가 가리키는 B -> B가 가리키는 값
+     * (더블포인터변수 A) -> (A가 가리키는 B) -> (B가 가리키는 값)
      * 위와 같은 형태가 더블포인터 구조이다.
      * 만약 함수가 (Node* Head, Node* newNode)로 선언되어있고,
      * Node* List = NULL인 빈 리스트를 선언하고, 이 리스트를 그냥 넘겨버리면
