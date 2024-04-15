@@ -36,8 +36,10 @@ typedef struct tagNode{
 //함수 원형 선언
 Node* SLL_CreateNode(ElementType NewData);
 void SLL_DestroyNode(Node* Node);
+void SLL_DestroyAllNodes(Node** Head);
 void SLL_AppendNode(Node** Head, Node* NewNode);
 void SLL_InsertAfter(Node* Current, Node* NewNode);
+void SLL_InsertBefore(Node** Head, Node* Current, Node* NewNode);
 void SLL_InsertNewHead(Node** Head, Node* NewHead);
 void SLL_RemoveNode(Node** Head, Node* Remove);
 Node* SLL_GetNodeAt(Node* Head, int Location);
@@ -82,7 +84,7 @@ Node* SLL_CreateNode(ElementType NewData){
 void SLL_AppendNode(Node** Head, Node* newNode){
     /**
      * 왜 Node** Head인가???
-     * (더블포인터변수 A) -> (A가 가리키는 B) -> (B가 가리키는 값)
+     * 더블포인터변수 A -> A가 가리키는 B -> B가 가리키는 값
      * 위와 같은 형태가 더블포인터 구조이다.
      * 만약 함수가 (Node* Head, Node* newNode)로 선언되어있고,
      * Node* List = NULL인 빈 리스트를 선언하고, 이 리스트를 그냥 넘겨버리면
@@ -143,8 +145,9 @@ void SLL_RemoveNode(Node** Head, Node* Remove){
         // Remove노드가 존재하는 경우만 if문 실행
         // Current노드는 Remove 이전 노드를 가리키고 있으므로
         // Current노드가 Remove 노드의 다음 노드를 가리키도록 설정
-        if (Current != NULL){
+        if (Current != NULL) {
             Current->NextNode = Remove->NextNode;
+            SLL_DestroyNode(Remove);
         }
     }
 }
@@ -160,6 +163,28 @@ void SLL_InsertAfter(Node* Current, Node* NewNode){
 }
 
 /**
+ * 원하는 노드를 현재 노드 이전에 삽입하는 함수
+ * @param Current
+ * @param NewNode
+ */
+void SLL_InsertBefore(Node** Head, Node* Current, Node* NewNode){
+    if (*Head == NULL){
+        *Head = NewNode;
+    }
+    else if (Current == *Head){
+        SLL_InsertNewHead(Head, NewNode);
+    }
+    else {
+        Node* Temp = *Head;
+        while (Temp != NULL && Temp->NextNode != Current) {
+            Temp = Temp->NextNode;
+        }
+        Temp->NextNode = NewNode;
+        NewNode->NextNode = Current;
+    }
+}
+
+/**
  * 새로운 헤드 생성 함수 (AppendFront 역할을 하는 함수)
  * 리스트 자체의 주소값을 가져와야 하므로 Node** 사용
  * @param Head
@@ -168,7 +193,7 @@ void SLL_InsertAfter(Node* Current, Node* NewNode){
 void SLL_InsertNewHead(Node** Head, Node* NewHead){
     // 리스트 자체가 Null이라면,
     // 헤드를 그냥 NewHead로 설정
-    if (Head == NULL){
+    if (*Head == NULL){
         *Head = NewHead;
     }
     else{
@@ -193,12 +218,29 @@ int SLL_GetNodeCount(Node* Head){
 }
 
 /**
- * Heap 영역에 할당한 Linked List 해제 함수
+ * Heap 영역에 할당한 Linked List Node 해제 함수
  * @param Node
  */
 void SLL_DestroyNode(Node* Node){
     free(Node);
 }
+
+/**
+ * Heap 영역에 할당한 "모든" Linked List Node 해제 함수
+ * @param Node
+ */
+void SLL_DestroyAllNodes(Node** Head){
+    if (Head != NULL && *Head != NULL) {
+        Node* Current = *Head;
+        while (Current != NULL) {
+            Node* next = Current->NextNode; // 다음 노드를 임시로 저장
+            free(Current); // 현재 노드 메모리 해제
+            Current = next; // 다음 노드로 이동
+        }
+        *Head = NULL; // 모든 노드가 해제된 후, 헤드 포인터를 NULL로 설정
+    }
+}
+
 ```
 
 ## Test_LinkedList.c
@@ -245,7 +287,22 @@ int main(){
         printf("List[%d] : %d\n", i, Current->Data);
     }
 
-    //모든 노드를 메모리에서 제거
+    //리스트 세번째 노드 앞에 데이터 삽입
+    printf("\nInserting 2000 After [2]\n\n");
+
+    Current = SLL_GetNodeAt(List, 2); // 2번째 노드를 가리킴
+    NewNode = SLL_CreateNode(2000);
+
+    SLL_InsertBefore(&List, Current, NewNode);
+
+    //리스트 출력
+    Count = SLL_GetNodeCount(List);
+    for(int i = 0; i < Count; i++){
+        Current = SLL_GetNodeAt(List, i);
+        printf("List[%d] : %d\n", i, Current->Data);
+    }
+
+    /*모든 노드를 메모리에서 제거
     printf("\nDestroying List\n");
     for(int i = 0; i < Count; i++){
         Current = SLL_GetNodeAt(List, 0);
@@ -253,7 +310,11 @@ int main(){
             SLL_RemoveNode(&List, Current);
             SLL_DestroyNode(Current);
         }
-    }
+    }*/
+
+    //모든 노드를 메모리에서 제거
+    printf("\nDestroying All Nodes in List\n");
+    SLL_DestroyAllNodes(&List);
 
     return 0;
 }
@@ -271,4 +332,4 @@ int main(){
 1. 다음 노드를 가리키는 포인터때문에 추가적인 메모리 할당이 필요하다.
 > 32bit는 포인터 변수를 4바이트, 64bit 컴퓨터는 8바이트를 고정적으로 할당한다.
 
-2. 특정위치의 노드에 접근하려면 $O(n)$ 시간이 필요하다.
+2. 특정위치의 노드에 접근하려면 $$O(n)$$ 시간이 필요하다.
