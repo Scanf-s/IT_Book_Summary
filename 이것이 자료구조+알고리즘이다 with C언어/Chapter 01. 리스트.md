@@ -36,10 +36,8 @@ typedef struct tagNode{
 //함수 원형 선언
 Node* SLL_CreateNode(ElementType NewData);
 void SLL_DestroyNode(Node* Node);
-void SLL_DestroyAllNodes(Node** Head);
 void SLL_AppendNode(Node** Head, Node* NewNode);
 void SLL_InsertAfter(Node* Current, Node* NewNode);
-void SLL_InsertBefore(Node** Head, Node* Current, Node* NewNode);
 void SLL_InsertNewHead(Node** Head, Node* NewHead);
 void SLL_RemoveNode(Node** Head, Node* Remove);
 Node* SLL_GetNodeAt(Node* Head, int Location);
@@ -321,7 +319,8 @@ int main(){
 ```
 
 ## 실행결과
-![image](https://github.com/Scanf-s/CS_Book_Summary/assets/105439069/d0e96f48-2061-4f1b-ae7d-71c2709a80a5)
+![](https://velog.velcdn.com/images/calzone0404/post/d802f5af-d904-49a7-abc9-de54f34aadd5/image.png)
+
 
 ## SLL의 장단점
 ### 장점
@@ -332,4 +331,458 @@ int main(){
 1. 다음 노드를 가리키는 포인터때문에 추가적인 메모리 할당이 필요하다.
 > 32bit는 포인터 변수를 4바이트, 64bit 컴퓨터는 8바이트를 고정적으로 할당한다.
 
-2. 특정위치의 노드에 접근하려면 $O(n)$ 시간이 필요하다.
+2. 특정위치의 노드에 접근하려면 $$O(n)$$ 시간이 필요하다.
+
+# 1.3 더블 링크드 리스트
+
+SLL과 동작은 똑같지만, PrevNode를 가리키는 포인터가 추가됨에 따라 SLL 구현 함수에서 조금 더 기능을 추가하거나 수정이 필요하다.
+
+## DoublyLinkedList.h
+```c
+#ifndef DOUBLY_LINKEDLIST_H
+#define DOUBLY_LINKEDLIST_H
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef int ElementType;
+
+typedef struct tagNode{
+    ElementType Data;
+    struct tagNode* PrevNode;
+    struct tagNode* NextNode;
+}Node;
+
+// 함수 원형 선언
+Node* DLL_CreateNode(ElementType NewData);
+void DLL_DestroyNode(Node* Node);
+void DLL_AppendNode(Node** Head, Node* NewNode);
+void DLL_InsertAfter(Node* Current, Node* NewNode);
+void DLL_RemoveNode(Node** Head, Node* Remove);
+Node* DLL_GetNodeAt(Node* Head, int Location);
+int DLL_GetNodeCount(Node* Head);
+void PrintReverse(Node* Head);
+
+#endif
+```
+
+## DoublyLinkedList.c
+```c
+#include "DoublyLinkedList.h"
+
+// 노드 생성
+Node* DLL_CreateNode(ElementType NewData){
+    Node* NewNode = (Node*)malloc(sizeof(Node));
+
+    NewNode->Data = NewData;
+    NewNode->NextNode = NULL;
+    NewNode->PrevNode = NULL;
+
+    return NewNode;
+}
+
+// 노드 해제
+void DLL_DestroyNode(Node* Node){
+    free(Node);
+}
+
+// 노드 추가
+void DLL_AppendNode(Node** Head, Node* NewNode){
+    //헤드가 NULL이면 NewNode가 헤드
+    if (*Head == NULL){
+        *Head = NewNode;
+    }
+    else{
+        Node* Tail = (*Head); //Tail을 Head로 설정하고, 마지막 노드를 찾는다
+        while(Tail->NextNode != NULL){
+            Tail = Tail->NextNode;
+        }
+        Tail->NextNode = NewNode;
+        NewNode->PrevNode = Tail;
+    }
+}
+
+// 노드 삽입
+void DLL_InsertAfter(Node* Current, Node* NewNode){
+    NewNode->NextNode = Current->NextNode;
+    NewNode->PrevNode = Current;
+
+    if(Current->NextNode != NULL){
+        Current->NextNode->PrevNode = NewNode;
+        Current->NextNode = NewNode;
+    }
+}
+
+// 노드 제거
+void DLL_RemoveNode(Node** Head, Node* Remove){
+    if (*Head == Remove){
+        *Head = Remove->NextNode;
+        if (*Head != NULL){ // 헤드 삭제하게 되면 헤드가 다음 노드를 가리키게 되는데
+            //Remove 이전노드를 다시 NULL로 바꿔주어야 완전한 Head가 되므로 NULL로 설정해줌
+            (*Head)->PrevNode = NULL;
+        }
+
+        Remove->NextNode = NULL;
+        Remove->PrevNode = NULL;
+    }
+    else{
+        Node* Temp = Remove;
+        if(Remove->PrevNode != NULL){
+            Remove->PrevNode->NextNode = Temp->NextNode;
+        }
+        if(Remove->NextNode != NULL){
+            Remove->NextNode->PrevNode = Temp->PrevNode;
+        }
+
+        Remove->PrevNode = NULL;
+        Remove->NextNode = NULL;
+    }
+}
+
+// 노드 탐색
+Node* DLL_GetNodeAt(Node* Head, int Location){
+    Node* Current = Head;
+    while(Current != NULL && (--Location) >= 0){
+        Current = Current->NextNode;
+    }
+    return Current;
+}
+
+// 노드 개수 출력
+int DLL_GetNodeCount(Node* Head){
+    unsigned int Count = 0;
+    Node* Current = Head;
+    while(Current != NULL){
+        Current = Current->NextNode;
+        Count++;
+    }
+    return Count;
+}
+
+void PrintNode(Node* Node){
+    if(Node->PrevNode == NULL){
+        printf("Prev: NULL");
+    }
+    else{
+        printf("Prev: %d", Node->PrevNode->Data);
+    }
+    printf("Current: %d", Node->Data);
+    if(Node->NextNode == NULL){
+        printf("Next: NULL");
+    }
+    else{
+        printf("Next: %d", Node->NextNode->Data);
+    }
+}
+
+// 역순 출력
+void PrintReverse(Node* Head){
+    int index = 0;
+    Node* Tail = Head;
+    while(Tail->NextNode != NULL){
+        Tail = Tail->NextNode;
+    }
+    Node* Temp = Tail;
+    while(Temp != NULL){
+        printf("List[%d] : %d\n", index, Temp->Data);
+        Temp = Temp->PrevNode;
+        index++;
+    }
+}
+```
+
+## Test_DoublyLinkedList.c
+```c
+#include "DoublyLinkedList.h"
+
+int main(){
+    int Count = 0;
+    Node* List = NULL;
+    Node* NewNode = NULL;
+    Node* Current = NULL;
+
+    for(int i = 0; i < 5; i++){
+        NewNode = DLL_CreateNode(i);
+        DLL_AppendNode(&List, NewNode);
+    }
+
+    Count = DLL_GetNodeCount(List);
+    for (int i = 0; i < Count; i++){
+        Current = DLL_GetNodeAt(List, i);
+        printf("List[%d] : %d\n", i, Current->Data);
+    }
+
+    printf("\nInserting 3000 After [2]...\n");
+
+    Current = DLL_GetNodeAt(List, 2);
+    NewNode = DLL_CreateNode(3000);
+    DLL_InsertAfter(Current, NewNode);
+
+    Count = DLL_GetNodeCount(List);
+    for (int i = 0; i < Count; i++){
+        Current = DLL_GetNodeAt(List, i);
+        printf("List[%d] : %d\n", i, Current->Data);
+    }
+
+    printf("\nReverse Print\n");
+
+    // 역순 출력
+    PrintReverse(List);
+
+    // 리스트 해제
+    printf("\nDestroying List...\n");
+    Count = DLL_GetNodeCount(List);
+
+    for(int i = 0; i < Count; i++){
+        Current = DLL_GetNodeAt(List, 0);
+        if (Current != NULL){
+            DLL_RemoveNode(&List, Current);
+            DLL_DestroyNode(Current);
+        }
+    }
+
+    return 0;
+}
+```
+
+# 1.4 환형 링크드 리스트
+
+환형 링크드 리스트는 위에서 구현한 SLL, DLL과는 달리 Head를 통해 Tail을 바로 찾아갈 수 있으며, Tail에서 Head를 바로 찾아갈 수 있다. 즉, 원 형태로 이루어진 링크드리스트이다.
+
+SLL로 구현 시, Tail에서 바로 Head로 갈 수 있지만, Head에서 Tail로 가는 방법은 다시 n개의 Node를 거쳐가는수밖에 없다.
+
+따라서 DLL로 구현하여 앞뒤로 자유롭게 이동이 가능하도록 하는것이 좋다.
+
+![](https://velog.velcdn.com/images/calzone0404/post/bd717508-93b1-4682-98a0-fa791ba20d48/image.png)
+
+![](https://velog.velcdn.com/images/calzone0404/post/1be6bdad-df62-4e2d-a157-29ec9cd5a8d2/image.png)
+
+## CircularDoublyLinkedList.h
+```c
+#ifndef CIRCULAR_DOUBLY_LINKEDLIST_H
+#define CIRCULAR_DOUBLY_LINKEDLIST_H
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef int ElementType;
+
+typedef struct tagNode
+{
+    ElementType Data;
+    struct tagNode* PrevNode;
+    struct tagNode* NextNode;
+} Node;
+
+Node* CDLL_CreateNode(ElementType NewData);
+void  CDLL_DestroyNode(Node* Node);
+void  CDLL_AppendNode(Node** Head, Node* NewNode);
+void  CDLL_InsertAfter(Node* Current, Node* NewNode);
+void  CDLL_RemoveNode(Node** Head, Node* Remove);
+Node* CDLL_GetNodeAt(Node* Head, int Location);
+int   CDLL_GetNodeCount(Node* Head);
+
+#endif
+```
+
+## CircularDoublyLinkedList.c
+```c
+#include "CircularDoublyLinkedList.h"
+
+//  노드 생성 
+Node* CDLL_CreateNode(ElementType NewData)
+{
+    Node* NewNode = (Node*)malloc(sizeof(Node));
+
+    NewNode->Data = NewData;
+    NewNode->PrevNode = NULL;
+    NewNode->NextNode = NULL;
+
+    return NewNode;
+}
+
+//  노드 소멸 
+void CDLL_DestroyNode(Node* Node)
+{
+    free(Node);
+}
+
+//  노드 추가 
+void CDLL_AppendNode(Node** Head, Node* NewNode)
+{
+    //  헤드 노드가 NULL이라면 새로운 노드가 Head 
+    if ( (*Head) == NULL ) 
+    {
+        *Head = NewNode;
+        (*Head)->NextNode = *Head;
+        (*Head)->PrevNode = *Head;
+    } 
+    else
+    {
+        //  테일과 헤드 사이에 NewNode를 삽입한다. 
+        Node* Tail = (*Head)->PrevNode;
+        
+        Tail->NextNode->PrevNode = NewNode;
+        Tail->NextNode = NewNode;
+
+        NewNode->NextNode = (*Head);
+        NewNode->PrevNode = Tail; //  기존의 테일을 새로운  
+                                  //  테일의 PrevNode가 가리킨다. 
+    }
+}
+
+//  노드 삽입 
+void CDLL_InsertAfter(Node* Current, Node* NewNode)
+{
+    NewNode->NextNode = Current->NextNode;
+    NewNode->PrevNode = Current;
+
+    if ( Current->NextNode != NULL )
+    {
+        Current->NextNode->PrevNode = NewNode;
+        Current->NextNode = NewNode;
+    }
+}
+
+//  노드 제거 
+void CDLL_RemoveNode(Node** Head, Node* Remove)
+{
+    if ( *Head == Remove )
+    {
+        (*Head)->PrevNode->NextNode = Remove->NextNode;
+        (*Head)->NextNode->PrevNode = Remove->PrevNode;
+
+        *Head = Remove->NextNode;
+        
+        Remove->PrevNode = NULL;
+        Remove->NextNode = NULL;
+    }
+    else
+    {
+        Remove->PrevNode->NextNode = Remove->NextNode;
+        Remove->NextNode->PrevNode = Remove->PrevNode;
+
+        Remove->PrevNode = NULL;
+        Remove->NextNode = NULL;
+    }    
+}
+
+//  노드 탐색 
+Node* CDLL_GetNodeAt(Node* Head, int Location)
+{
+    Node* Current = Head;
+
+    while ( Current != NULL && (--Location) >= 0)
+    {
+        Current = Current->NextNode;
+    }
+
+    return Current;
+}
+
+//  노드 수 세기 
+int CDLL_GetNodeCount(Node* Head)
+{
+    unsigned int  Count = 0;
+    Node*         Current = Head;
+
+    while ( Current != NULL )
+    {
+        Current = Current->NextNode;
+        Count++;
+
+        if ( Current == Head )
+            break;
+    }
+
+    return Count;
+}
+
+void PrintNode(Node* _Node)
+{
+    if ( _Node->PrevNode == NULL )
+        printf("Prev: NULL");
+    else
+        printf("Prev: %d", _Node->PrevNode->Data);
+
+    printf(" Current: %d ", _Node->Data);
+
+    if ( _Node->NextNode == NULL )
+        printf("Next: NULL\n");
+    else
+        printf("Next: %d\n", _Node->NextNode->Data);
+}
+```
+
+## Test_CircularDoublyLinkedList.c
+
+```c
+#include "CircularDoublyLinkedList.h"
+
+int main( void )
+{
+    int   i       = 0;
+    int   Count   = 0;
+    Node* List    = NULL;
+    Node* NewNode = NULL;
+    Node* Current = NULL;
+
+    //  노드 5개 추가 
+    for ( i = 0; i<5; i++ )
+    {
+        NewNode = CDLL_CreateNode( i );
+        CDLL_AppendNode( &List,NewNode );
+    }
+
+    //  리스트 출력 
+    Count = CDLL_GetNodeCount( List );
+    for ( i = 0; i<Count; i++ )
+    {
+        Current = CDLL_GetNodeAt( List, i );
+        printf( "List[%d] : %d\n", i, Current->Data );
+    }
+
+    //  리스트의 세번째 칸 뒤에 노드 삽입 
+    printf( "\nInserting 3000 After [2]...\n\n" );
+
+    Current = CDLL_GetNodeAt( List, 2 );
+    NewNode = CDLL_CreateNode( 3000 );
+    CDLL_InsertAfter( Current, NewNode );
+
+    printf( "\nRemoving Node at 2...\n" );
+    Current = CDLL_GetNodeAt( List, 2 );
+    CDLL_RemoveNode( &List, Current );
+    CDLL_DestroyNode( Current );
+
+    //  리스트 출력  
+    //  (노드 수의 2배만큼 루프를 돌며 환형임을 확인한다.) 
+    Count = CDLL_GetNodeCount( List );
+    for ( i = 0; i<Count*2; i++ )
+    {
+        if ( i == 0 )
+            Current = List;
+        else
+            Current = Current->NextNode;
+        
+        printf( "List[%d] : %d\n", i, Current->Data );
+    }
+
+    //  모든 노드를 메모리에서 제거     
+    printf( "\nDestroying List...\n" );
+
+    Count = CDLL_GetNodeCount( List );
+
+    for ( i = 0; i<Count; i++ )
+    {
+        Current = CDLL_GetNodeAt( List, 0 );
+
+        if ( Current != NULL ) 
+        {
+            CDLL_RemoveNode( &List, Current );
+            CDLL_DestroyNode( Current );
+        }
+    }
+
+    return 0;
+}
+```
