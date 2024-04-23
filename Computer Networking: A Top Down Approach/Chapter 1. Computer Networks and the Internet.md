@@ -333,8 +333,8 @@ $d_{nodal} = d_{proc} + d_{queue} + d_{trans} + d_{prop}$
 우리가 해외여행을 가기위해 공항에서 수행하는 일련의 과정들처럼, 네트워크도 통신을 하기 위해 일련의 과정들을 거치고 있다.
 
 ![](https://velog.velcdn.com/images/calzone0404/post/fd551b8c-3590-44b0-98b5-2a45690a15a9/image.png)
-
-즉, 위 해외여행을 할 때, 어떤 서비스 제공부서에서 어떠한 서비스를 제공받을 수 있는지 정해져 있다. 예를 들어, 공항의 Ticket 계층에서는 Ticket과 관련된 서비스를 제공하고, Baggage 계층에서는 수하물 처리와 관련된 서비스를 제공한다. 이와 마찬가지로 네트워크도 어떤 계층에서 어떠한 동작을 제공받는지 정해져있다.
+즉, 위 해외여행을 할 때, 어떤 서비스 제공부서에서 어떠한 서비스를 제공받을 수 있는지 정해져 있는것과 마찬가지로 네트워크도 어떤 계층에서 어떠한 동작을 제공받는지 정해져있다. 
+다시 말해, 공항의 Ticket 계층에서는 Ticket과 관련된 서비스를 제공하고, Baggage 계층에서는 수하물 처리와 관련된 서비스를 제공한다.
 
 ![](https://velog.velcdn.com/images/calzone0404/post/c8b7ac7c-0b06-480a-9d1e-0b7825785b72/image.png)
 
@@ -378,3 +378,36 @@ IP 프로토콜은 출발지와 목적지 사이에서 데이터가 이동하는
 말그대로 랜선, 동축케이블, 광섬유와 같은 물리적 선과 NIC가 여기에 포함된다.
 
 ## 1.5.2 캡슐화
+![](https://velog.velcdn.com/images/calzone0404/post/1dc65bb7-0467-4da6-947a-df447125c99b/image.png)
+
+이 그림은 캡슐화, 비캡슐화를 보여준다.
+
+1. Source의 Application이 Destination에 어떤 메세지를 보내려고 한다.
+
+2. Message M을 생성하여 Transport 계층으로 전달한다. 
+   Transport 계층에서는 이 메세지와 함께, Destination측의 Transport 계층에서 사용할 정보를 담은 헤더를 추가하여 **캡슐화**한다.
+   Transport 계층에서 캡슐화 된 세그먼트를 Network 계층으로 전달한다.
+    
+3. Network 계층에서는 세그먼트를 패킷으로 쪼개서, Destination측의 Network 계층에서 사용할 정보를 담은 헤더를 추가하여 **캡슐화**한다.
+   Network 계층에서 캡슐화 된 패킷을 Link 계층으로 전달한다 ( 그림의 Link-layer switch에서 이 정보를 사용한다. )
+
+4. Destination측에서 차례대로 캡슐화 된 정보를 풀어서 (**decapsulation**) 상위 계층으로 올려보낸다.
+
+5. Destination의 Application 계층에서 메세지를 수신한다.
+
+# 1.6 공격받는 네트워크
+
+## DOS 공격
+> Denial of service 공격은, 목표 지점의 서비스를 다른 정상적인 사용자들이 이용할 수 없도록 과부화시키는 공격이다.
+
+- vulnerability attack : 목표 지점의 어플리케이션에 교묘한 메세지를 보내서 서비스가 중단되게 만든다.
+- bandwidth flooding : 목표 지점으로 수많은 패킷을 보내서 정상적인 패킷이 도착하지 못하도록 네트워크를 마비시킨다.
+- connection flooding : 호스트에게 가짜 연결을 생성하여 정상적인 연결 처리를 하지 못하도록 만든다.
+
+> Distributed Denial of service 공격 : 분산된 공격자(좀비PC)가 DoS공격을 하는 행위
+
+## Spoofing
+- IP Spoofing : 가짜 IP주소를 가진 패킷을 인터넷으로 보내는 행위
+
+# 1.7 컴퓨터 네트워킹과 역사
+``SKIP!``
