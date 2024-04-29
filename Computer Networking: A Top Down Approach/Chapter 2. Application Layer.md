@@ -77,7 +77,105 @@ Host에서 실행하는 프로그램이 직접 통신하는것이 아니라, **P
 ## 2.1.4 Transport Protocol이 제공하는 서비스
 
 ### TCP Service
+![](https://velog.velcdn.com/images/calzone0404/post/bfd22e19-b78e-4fa5-8d16-2c302fd1eaab/image.png)
+
+> TCP 프로토콜은 연결지향형 서비스와 신뢰성 있는 데이터 전송 서비스를 제공한다.
+
+**``연결지향형``** : Client와 Server간의 메세지를 교환하기 이전에, 서로 **전송 제어 정보를 교환하는 3-way-handshake**를 수행하게 한다.
+
+**``신뢰적인 데이터 전송``** : 통신 프로세스는 모든 데이터를 오류 없이 올바른 순서로 전달하게 한다.
 
 ### UDP Service
 
-### Transport protocol이 제공하지 않는 서비스
+> UDP 프로토콜은 최소한의 서비스를 제공하기 위한 간단한 전송 프로토콜이다.
+
+- TCP와 달리 **handshake**과정이 존재하지 않는다.
+
+- 비신뢰적인 데이터 전송 서비스를 제공한다. 즉, UDP Socket으로 데이터를 전송하면 수신지에 올바르게 도착하는지는 상관하지 않는다.
+
+
+### TLS
+
+기존 TCP, UDP는 암호화 서비스를 제공하지 않았다. 하지만, Transport Layer Security 서비스를 개발하여 **TCP**가 하는 모든 서비스에 더해서, **암호화, 데이터 무결성, 종단 인증**등의 중요한 보안 서비스를 제공한다.
+
+> TLS는 TCP나 UDP처럼 Transport Layer Protocol이 **아니다!**
+TLS는 어플리케이션 계층에 구현된 서비스이다.
+
+![](https://velog.velcdn.com/images/calzone0404/post/cc175f3b-9e3c-48a7-ace8-c9136bfabae3/image.png)
+
+
+## 2.1.5 어플리케이션 계층 프로토콜
+
+> Application Layer Protocol은 서로 다른 Host에서 실행되는 Application process가 서로 메세지를 보내는 방법을 정의한다.
+
+- **교환 메세지 타입** (요청 메세지, 응답 메세지)
+- **여러 메세지 타입의 문법**(메세지 내부 필드와 필드간의 구별 방법)
+- **필드의 의미**, 즉 필드에 있는 정보의 의미
+- **언제 어떻게 프로세스가 메세지를 전송하고 메세지에 응답하는지 결정하는 규칙**
+
+이 계층 프로트콜은 **RFC**에 명시되어 있으므로, 공중 도메인에서 찾을 수 있다. https://www.rfc-editor.org/standards
+
+만약 웹 개발자가 HTTP RFC 규칙을 따른다면, 다른 모든 HTTP RFC규칙을 따른 웹 서버는 해당 서비스를 이용할 수 있다.
+
+# 2.2 웹과 HTTP
+## 2.2.1 HTTP 개요
+
+> HTTP는 서로 다른 종단 시스템에서 수행되는 웹 프로그램이 서로 메세지를 교환할 때 사용하는 프로토콜이다.
+
+HTTP 프로토콜은 메세지의 구조 및 클라이언트와 서버가 어떻게 메세지를 교환하는지 정의한다.
+
+어떤 HTTP 프로젝트 파일에서, HTTP 프로토콜은 각 객체들(html, css, js 등...)을 **URL**을 통해서 접근한다.
+
+``http://www.asdf.com/store/asdf.gif``
+
+- ``www.asdf.com`` : 호스트 이름
+- ``/store/asdf.gif`` : 경로 이름
+
+``Client``는 **웹 브라우저**를 통해 웹 페이지를 보여주고, 여러가지 인터넷 검색과 서비스를 제공한다.
+
+``Web Server``는 URL을 통해 각각의 웹 구성요소 객체를 지정할 수 있다. 주로 Apache, IIS가 이에 해당한다.
+
+### HTTP 통신 과정
+
+![](https://velog.velcdn.com/images/calzone0404/post/dd74f306-2c15-4581-be12-a2679861d8c6/image.png)
+
+1. Client가 Web Server에 TCP 연결을 수립한다.
+2. Browser와 Server Process는 Socket을 통해 TCP로 접속한다.
+3. Client가 **HTTP Request** 메세지를 보내서 특정 서비스 또는 콘텐츠를 요구한다.
+4. Server는 **HTTP Response** 메세지로 Client가 요구한 서비스 또는 콘텐츠를 요구한다.
+
+## 2.2.2 Stateless, Stateful Connection
+
+> HTTP 서버는 Client에 대한 정보를 유지하지 않는 **stateless protocol**이다.
+
+- ``Stateless connection`` : 각 Request/Response쌍이 개별된 TCP Connection을 통해 수행되는 경우를 말한다.
+(즉, 통신할때마다 새로 TCP 연결 수립 후 요구한 서비스 및 콘텐츠 수신/송신 시 연결 해제)
+
+- ``Stateful connection`` : 각 Request/Response쌍이 같은 TCP Connection을 통해  수행되는 경우를 말한다.
+
+### Stateless HTTP
+
+예를 들어, 11개의 콘텐츠를 요청하는 Client가 있을 때, 동작을 살펴보자.
+
+1. Client-Server간 특정 포트번호 (주로 80번)를 통해 TCP 연결을 수립한다.
+2. Client의 Socket에서 HTTP Request를 보낸다.
+3. Client가 요구한 콘텐츠를 추출하여  HTTP Response 메세지에 캡슐화하여 Socket을 통해 전달한다.
+4. 모든 요구사항을 해결하였으므로 TCP Connection을 끊어버린다.
+
+하나의 작업을 다 수행하면, 연결이 끊어지기 때문에 나머지 10개의 콘텐츠 요구에 대해서도 **전부 일일히 TCP연결을 다시 수립해야한다**
+
+![](https://velog.velcdn.com/images/calzone0404/post/e08e12af-990c-48b5-8d61-fc71b1caa97c/image.png)
+위 그림처럼 11번 연결을 한다면 총 2 * 11 RTT가 소요된다.
+
+> RTT(Round-trip-time) : 패킷이 Client에서 Server까지 가고, 다시 되돌아오는데 걸리는 시간
+
+> 만약, 순차적으로 TCP연결을 수행하는 경우, n개의 요구에 대해서 $2*RTT$ + 서버가 파일을 전송하는데 걸리는 시간이소요된다. 하지만, 동시성 연결을 지원하는 경우는 이를 획기적으로 줄일 수 있다.
+
+### Stateful HTTP
+
+> Stateless는 각 TCP연결을 수립해야하므로 수많은 TCP 버퍼가 필요하게 된다. HTTP/1.1 버전부터는 하나의 연결을 계속 유지하도록 하는 Stateful을 지원한다.
+
+일반적으로 Stateful은 지속적으로 연결이 유지되지만, Client-Server간의 통신이 없는 경우, 일정 시간 이후에 연결을 해제한다.
+
+## 2.2.3 HTTP 메세지 포맷
+
