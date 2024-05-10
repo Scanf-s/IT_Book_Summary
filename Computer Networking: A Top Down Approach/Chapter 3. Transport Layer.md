@@ -235,10 +235,10 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 ![estRTT](https://velog.velcdn.com/images/calzone0404/post/f2706a40-046f-4579-a0a8-f105250e4e9a/image.png)
 
 ### 재전송 타임아웃 주기 설정
-- DevRTT : SampleRTT가 EstimatedRTT와 얼마나 벗어나 있는지에 대해서 정의한다.
+- DevRTT : SampleRTT가 EstimatedRTT와 얼마나 벗어나 있는지에 대해서 정의한다.  
 ![devRTT](https://velog.velcdn.com/images/calzone0404/post/0445d061-d670-40c8-963d-5b889eddee76/image.png)
 
-- Timeout값은 EstimatedRTT에 약간의 여윳값을 더하여 구한다.
+- Timeout값은 EstimatedRTT에 약간의 여윳값을 더하여 구한다.  
 ![TimeoutInterval](https://velog.velcdn.com/images/calzone0404/post/4ef67e52-9a77-4d0d-8860-46d871fcdd63/image.png)
 
 
@@ -251,19 +251,17 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 
 - App으로부터 Data 수신 시
   - Sequence 번호를 붙여서 Segment를 생성한다.
-  - 아직 다른 Segment에 대해 실행중이 아니라면, Timer를 시작한다.
-  <br>
+  - 아직 다른 Segment에 대해 실행중이 아니라면, Timer를 시작한다.  
 - Timer Timeout
   - Timeout 발생 시 Segment를 재전송한다.
-  - Timer를 초기화하고, 다시 시작한다.
-  <br>
+  - Timer를 초기화하고, 다시 시작한다.  
 - ACK 수신 시
-  일단 TCP는 변수 SendBase와 ACK값 $$y$$를 비교한다.
+  일단 TCP는 변수 SendBase와 ACK값 $y$를 비교한다.
   
   >SendBase : ACK가 확인 되지 않은 / 가장 오래된 바이트의 순서 번호
   >SendBase-1 : 수신자에게서 정확하게 차례대로 수신되었음을 알리는 마지막 바이트의 순서번호
   
-  TCP는 누적된 ACK를 사용하고, $$y$$는 $$y$$바이트 이전의 모든 바이트의 수신을 확인한다.
+  TCP는 누적된 ACK를 사용하고, $y$는 $y$바이트 이전의 모든 바이트의 수신을 확인한다.
   
   이때, $$y > SendBase$$이면, ACK는 이전에 ACK응답이 안 된 하나 이상의 Segment들을 확인한다.
     1. 송신자는 자신의 SendBase 변수를 갱신
