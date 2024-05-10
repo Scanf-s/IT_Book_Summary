@@ -1,10 +1,10 @@
 # 5.1 데이터 링크 계층 소개
 
 ## Terminology
-1. **Host**와 **Router**는 **_NODE_**라고 부른다
-2. **_link_**란, 통신 경로를 따라 인접 노드를 연결하는 통신 채널을 의미함
+1. **Host**와 **Router**는 `NODE`라고 부른다
+2. `link`란, 통신 경로를 따라 인접 노드를 연결하는 통신 채널을 의미함
 	예를 들어, Wired Link, Wireless Link, LANs
-3. 2계층 패킷은 **frame**이라고 부르며, datagram을 캡슐화한다.
+3. 2계층의 데이터 단위는 `frame`이라고 부른다. 이 frame들을 캡슐화 한 것이 `datagram`이다.
 
 >즉, 데이터 링크 계층은 Link를 통해 물리적으로 인접한 Node로 datagram을 전송하는 역할을 담당한다.**
 
