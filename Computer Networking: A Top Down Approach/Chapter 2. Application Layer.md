@@ -1,10 +1,11 @@
 # 2.1 네트워크 어플리케이션의 원리
 
 ## 2.1.1 네트워크 어플리케이션 구조
-``어플리케이션 구조`` : 어플리케이션 개발자가 설계하며, 다양한 종단 시스템에서 어떻게 조직되어야 하는지를 알려준다. 
+`어플리케이션 구조` : 어플리케이션 개발자가 설계하며, 다양한 종단 시스템에서 어떻게 조직되어야 하는지를 알려준다. 
 또한, 어플리케이션 구조를 선택할 때, Network Application에서 사용되는 두 가지 잘 알려진 구조 중 하나로 작성한다.
 
-``클라이언트-서버 구조`` 
+`클라이언트-서버 구조`
+
 ![](https://velog.velcdn.com/images/calzone0404/post/d5218efe-11bb-4cf4-9c12-e3286ee9ea97/image.png)
 
 - 이 구조에서 항상 서비스를 제공하기 위해 동작하고 있는 호스트를 **Server**라고 부른다.
@@ -14,7 +15,8 @@
 특징 1. 클라이언트는 서로 직접적으로 통신하지 않는다. 즉, 항상 서버를 통해 통신한다.
 특징 2. 서버가 고정 IP주소를 이용하여 Client에게 통신할 수 있는 환경을 제공한다.
 
-``P2P구조``
+`P2P구조`
+
 ![](https://velog.velcdn.com/images/calzone0404/post/f3a46cd8-be82-4344-8a53-7c9bfbb58cbd/image.png)
 
 - 이 구조에서는 항상 켜져 있는 Infrastructure Server에 최소로 의존하거나 전혀 서버를 사용하지 않는다.
@@ -285,14 +287,81 @@ HTTP Request Message에 만약 해당 내용이 들어있다면, 조건부 GET �
 인터넷 전자메일 시스템은 다음과 같이 구성된다.
 ![](https://velog.velcdn.com/images/calzone0404/post/581f08a9-a411-4c9e-84a0-f9133d674549/image.png)
 
-1. Mail Server - 메일 서비스를 구현한 서버
-2. User Agent - 사용자가 메일을 읽고, 쓰고, 전달하고, 저장하는 기능을 할 수 있도록 도와주는 서비스
-3. SMTP - 메일 전송 프로토콜
+전자메일은 **비동기적 통신 매체**로, 자신이 편할 때 메세지를 보내거나 읽을 수 있다.
 
-### 2.3.1 SMTP
+인터넷 메일 시스템은 크게 3가지의 주요 요소로 이루어져 있다.
+
+`User Agent` : 사용자가 메세지를 읽고, 응답하고, 전달하고, 구성하게 해준다. (Outlook, Gmail, Apple mail ... )
+
+예를 들어, A가 메세지 작성을 끝내고 전송 버튼을 누르면 **User agent**는 메세지를 메일 서버로 보내고, 메일 서버의 **출력 메세지 큐**에 들어가게 된다.
+
+만약 B가 A가 보낸 메세지를 받고 싶다면, 메일 서버안의 메일 박스에서 메세지를 가져오게 된다.
+
+`Mail Server` : 전자 메일 인프라의 중심으로, B와 같이 **수신자**들 각각에 대한 **Mail box**가 존재한다.
+예를 들어, B 전용 Mail box에서 B는 자신에게 수신된 메세지를 확인할 수 있다.
+
+일반적으로 전자 메일은 **A의 User agent**에서 전달이 시작되고, **A의 Mail Server**를 거쳐서, **B의 Mail Server**로 전달되며 최종적으로 **B의 User agent**를 통해 B가 메세지를 읽게 된다.
+
+> 만약 A의 Mail Server가 B의 Mail Server로 메세지를 전달할 수 없다면, **Output message queue**에 일단 저장해두고, 나중에 서버 설정에 따라서 재전송을 시도한다. (너무 오래 전달이 안되면 버려지고, A에게 메세지 전송 불가 통보를 한다)
+
+`SMTP` : 인터넷 전자메일을 위한 주요 Application Layer Protocol
+SMTP는 A의 Mail Server에서 B의 Mail Server로 메세지를 전송하는 데 사용하는 **TCP 프로토콜**을 사용한다.
+
+SMTP는 두가지 Mode로 동작한다.
+`Client SMTP` : Mail Server가 상대 Mail Server로 메일을 보내는 경우
+`Server SMTP` : Mail Server가 상대 Mail Server로부터 메일을 받는 경우
+
+## 2.3.1 SMTP
+
+### SMTP의 기본 동작
+
+![](https://velog.velcdn.com/images/calzone0404/post/bbf73389-924d-412d-a9f4-0b9abf9d4d6f/image.png)
+
+1. Alice가 User agent를 사용하여 Bob의 전자메일 주소와 함께 보낼 메세지를 작성하여, 전송 명령을 내린다.
+2. User agent는 해당 전자메일을 메일 서버에 보내고 (SMTP 또는 HTTP POST), 메일 서버의 큐에 놓는다.
+3. Alice의 메일 서버에서 동작하는 **SMTP**가 큐에 있는 전자메일을 확인하고, Bob의 메일 서버에 **TCP**연결을 수행한다.
+4. SMTP Handshaking 이후, 전자메일을 **TCP**를 이용하여 송신한다.
+5. Bob의 메일 서버의 **SMTP**는 메세지를 수신하고, 이 메세지를 **Bob 전용 Mail box**에 놓는다.
+6. Bob은 편한 시간에 **User agent**를 사용하여 해당 메세지를 읽는다.
+
+### SMTP가 메세지를 전달하는 방법
+1. **Client SMTP(송신측 메일 서버)**는 **Server SMTP(수신측 메일 서버)**의 `25`번 포트로 TCP 연결을 설정한다.
+2. 연결이 성립되면 **Handshaking**을 수행한다.
+3. Handshaking 과정에서, **Server Client**가 송신자의 Email address와 수신자의 Email address 정보를 제공한다.
+4. 이후, 메세지를 보낸다
+
+위 과정을 좀 더 자세하게 보자. C(crepes.fr)는 Client SMTP이고, S(hamgergur.edu)는 Server SMTP이다.
+![](https://velog.velcdn.com/images/calzone0404/post/44e7aaef-73c0-4ff1-95ca-6f69f86a118b/image.png)
+
+> SMTP는 지속(Persistent)연결을 사용하기 때문에, 만약 송신 메일 서버가 수신 메일 서버로 보내는 여러 메세지가 존재한다면, 또 다시 Handshake를 수행하지 않고 여러개의 TCP 송신이 가능하다 (HTTP Stateful)
 
 ### 2.3.2 메일 메세지 포맷
 
-### 2.3.3 메일 접속 프로토콜 HTTP, IMAP
+전자메일을 전송할 때는 주변 정보가 포함된 Header가 Message 앞에 먼저 오게된다.
+주변 정보는 반드시 다음 두개의 헤더라인을 가져야 한다. `From:`, `To:`
+
+![](https://velog.velcdn.com/images/calzone0404/post/b020961d-7af3-481a-a58d-1ace897450a3/image.png)
+
+
+### 2.3.3 메일 PULL 프로토콜 IMAP, HTTP
+
+SMTP는 사실, User agent에서 어떤 메일을 읽으려고 할 때, 해당 작업을 수행하지 못한다.
+그 이유는 SMTP가 **PUSH** 프로토콜이기 때문이다.
+즉, 메일 서버에서 자신의 메세지를 가져오는 행위는 **PULL**이기 때문에, 해당 작업을 수행하지 못하는 것이다.
+
+![](https://velog.velcdn.com/images/calzone0404/post/618e01e1-b5ac-4d12-9ac5-9e9e99c1f821/image.png)
+
+이를 해결하기 위한 프로토콜이 바로 **`IMAP`**이다.
+IMAP을 통해 **PULL**방식을 사용하여 User agent가 메일 서버의 Mail box에서 원하는 전자메일을 가져올 수 있게 된다.
+
+다른 방법으로는, 만약 Bob이 웹 기반 메일서버로부터 메일을 가져온다면 **HTTP GET**을 사용하여 가져올 수 있다. 이 경우에는 물론 메일 서버는 SMTP interface와 HTTP interface가 구현되어 있어야 한다.
 
 # 2.4 DNS: 인터넷의 디렉터리 서비스
+
+
+
+# 2.5 FTP: 파일 전송 프로토콜
+
+# 2.6
+
+# 2.7 소켓 프로그래밍
