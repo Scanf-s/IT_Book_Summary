@@ -248,7 +248,7 @@ for i in range(10):
 따라서, 많은 단순한 `.append` 연산이 하나의 새로운 배열을 만드는비싼 연산과 일치하게 된다. 
 이를 통해 초기 비어있는 동적 배열에 대해 일련의 연산을 수행하는 것이 전체 실행 시간 측면에서 효율적이라고 할 수 있다.
 
-# Amortization Analysis을 사용한 효율성 증명
+### Amortization Analysis을 사용한 효율성 증명
 상환 분석을 통해 일련의 append 연산을 수행하는 것이 실제로 매우 효율적임을 증명할 수 있다.
 상환 분석을 수행하기 위해 컴퓨터를 일정량의 계산 시간을 위해 하나의 사이버 달러**(즉, 시간당 하나의 사이버 달러)**를 요구하는 동전 투입 기계로 생각해보자.
 그리고 연산이 실행될 때, 우리는 현재 "은행 계좌"에 해당 연산의 실행 시간을 지불할 수 있을 만큼 충분한 사이버 달러가 있다고 가정하자.
@@ -275,3 +275,36 @@ for i in range(10):
 예를 들어, 요소 수가 용량의 1/4 이하로 감소하면 배열 용량을 절반으로 줄이는 전략을 사용할 수 있다.
 
 ## 5.3.3 Python's List Class
+
+Python의 `list` Class가 어떻게 동적 배열을 사용하여, 요소들을 관리하는지 알아볼 수 있다.
+
+```python
+from time import time
+
+def compute_average(n):
+    """빈 리스트에 n개의 요소를 append하는 데 걸리는 평균 시간을 반환"""
+    data = []
+    start = time()  # 시작 시간 기록
+    for k in range(n):
+        data.append(None)
+    end = time()  # 종료 시간 기록
+    return (end - start) / n  # 연산당 평균 시간 계산
+```
+
+이 코드를 n = $10^2$, $10^3$, ..씩 늘려가면서 돌려본 결과를 표로 나타내보았다.
+![image](https://github.com/Scanf-s/CS_Book_Summary/assets/105439069/58b64368-ee03-4bbc-a0af-865468ba7736)
+
+이 표를 보면 n회의 append가 상수시간이 걸린다는것을 확인할 수 있다. (실제로 코드를 실행해봐도 비슷하게 나온다.)
+
+<hr>
+
+# 5.4 Efficiency of Python's Sequence Types
+## 5.4.1 Python's List and Tuple Class
+## 5.4.2 Python's String Class
+
+# 5.5 Using Array-Based Sequences
+## 5.5.1 Storing High Scores for a Game
+## 5.5.2 Sorting a Sequence
+## 5.5.3 Simple Cryptography
+
+# 5.6 Multidimensional Data Sets
