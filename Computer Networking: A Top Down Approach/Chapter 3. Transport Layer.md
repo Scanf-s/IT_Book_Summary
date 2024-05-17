@@ -263,7 +263,7 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
   
   TCP는 누적된 ACK를 사용하고, $y$는 $y$바이트 이전의 모든 바이트의 수신을 확인한다.
   
-  이때, $$y > SendBase$$이면, ACK는 이전에 ACK응답이 안 된 하나 이상의 Segment들을 확인한다.
+  이때, $y > SendBase$이면, ACK는 이전에 ACK응답이 안 된 하나 이상의 Segment들을 확인한다.
     1. 송신자는 자신의 SendBase 변수를 갱신
     2. 아직 ACK응답이 안 된 Segment가 존재한다면, Timer를 다시 시작
     
@@ -341,7 +341,7 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
     1. LastByteRead : B의 Process에 의해 Buffer로부터 읽힌 Data Stream의 마지막 Byte 번호
       - LastByteRcvd : B에게 도착하여 Receive Buffer에 저장된 Data Stream의 마지막 Byte 번호
       - **RcvWindow(rwnd)** : 버퍼의 여유 공간
-        = RcvBuffer $$-$$ $$($$LastByteRcvd $$-$$ LastByteRead$$)$$
+        = RcvBuffer $-$ $($LastByteRcvd $-$ LastByteRead$)$
       ![](https://velog.velcdn.com/images/calzone0404/post/474bc390-1af5-45b2-ba0b-2ab815c6ba76/image.png)
 
 
@@ -397,29 +397,29 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 
 ## 혼잡의 원인과 비용 - 예시 1
 - 두 Host A, B가 각각 출발지와 목적지 사이에서 단일 Router를 공유
-- A와 B의 Process가 $$λ_{in}$$의 전송률로 데이터를 전송
-- Output Link의 수용량 : $$R$$
+- A와 B의 Process가 $λ_{in}$의 전송률로 데이터를 전송
+- Output Link의 수용량 : $R$
 - Router Buffer는 무한하다고 가정하자
 ![](https://velog.velcdn.com/images/calzone0404/post/8785dc16-82bc-4739-bea3-3592ebd8cd33/image.png)
 
 ***
 1. 연결 당 처리량
 ![](https://velog.velcdn.com/images/calzone0404/post/297f5ea7-4d2b-46c3-9865-a67ab95bcf27/image.png)
-0 ~ $$R/2$$ 사이에서의 전송 속도 : 수신자 측의 처리량은 송신자의 전송률과 같다.
-$$R/2$$ 이상의 전송 속도 : 처리량은 $$R/2$$
-즉, A와 B가 전송률을 아무리 높여도 각자 $$R/2$$보다 높은 처리량을 얻을 수 없음
+0 ~ $R/2$ 사이에서의 전송 속도 : 수신자 측의 처리량은 송신자의 전송률과 같다.
+$R/2$ 이상의 전송 속도 : 처리량은 $R/2$
+즉, A와 B가 전송률을 아무리 높여도 각자 $R/2$보다 높은 처리량을 얻을 수 없음
 
 ***
 2. 평균 지연
 ![](https://velog.velcdn.com/images/calzone0404/post/8fac3ee9-866e-4266-9da9-c2beca2520e5/image.png)
-전송률이 $$R/2$$에 근접할 경우 : 평균 지연은 점점 커진다.
-전송률이 $$R/2$$를 초과할 경우 : $$Infinity$$
+전송률이 $R/2$에 근접할 경우 : 평균 지연은 점점 커진다.
+전송률이 $R/2$를 초과할 경우 : $Infinity$
 
 ## 혼잡의 원인과 비용 - 예시 2
 - 송신자 A, B
 - 유한한 크기의 Buffer를 가진 라우터 1개
-- A와 B의 Process가 $$λ_{in}$$의 전송률로 데이터를 전송
-- Output Link의 수용량 : $$R$$
+- A와 B의 Process가 $λ_{in}$의 전송률로 데이터를 전송
+- Output Link의 수용량 : $R$
 ![](https://velog.velcdn.com/images/calzone0404/post/7126c959-670e-43c2-a4d1-692f648c6a6a/image.png)
 
 라우터가 버퍼의 양이 유한하므로 버퍼가 가득차게 된다면 도착하는 패킷은 버려진다.
@@ -428,8 +428,8 @@ $$R/2$$ 이상의 전송 속도 : 처리량은 $$R/2$$
 ![](https://velog.velcdn.com/images/calzone0404/post/394d60cd-fc14-43e9-bf48-085557e8cfe6/image.png)
 
 A. 어떠한 손실도 발생하지 않음
-- 연결의 처리량 : $$λ_{in}$$
-- 송신률은 $$R/2$$를 초과할 수 없음
+- 연결의 처리량 : $λ_{in}$
+- 송신률은 $R/2$를 초과할 수 없음
 
 B. 패킷이 손실되었다는 것을 알고 송신자가 재전송 하는 경우
 - 제공된 부하 λ'in이 R/2일 경우 : 데이터의 전송률은 R/3
