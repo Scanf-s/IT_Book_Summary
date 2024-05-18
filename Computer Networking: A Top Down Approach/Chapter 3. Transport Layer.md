@@ -28,7 +28,7 @@
 
 ## Overview of the Transport Layer in the Internet
 
-인터넷은 애플리케이션 계층에 **UDP(User Datagram Protocol, 사용자 데이터그램 프로토콜)**와 **TCP(Transmission Control Protocol, 전송 제어 프로토콜)** 두 가지 서로 다른 전송 계층 프로토콜을 제공합니다. 
+인터넷은 애플리케이션 계층에 **UDP(User Datagram Protocol, 사용자 데이터그램 프로토콜)**와 **TCP(Transmission Control Protocol, 전송 제어 프로토콜)** 두 가지 서로 다른 전송 계층 프로토콜을 제공하고 있다. 
 
 UDP는 **신뢰할 수 없는** 비연결 서비스를, TCP는 **신뢰할 수 있는** 연결 지향 서비스를 제공한다. 네트워크 애플리케이션을 설계할 때, 개발자는 이 두 전송 프로토콜 중 하나를 선택해야 한다.
 
