@@ -28,7 +28,7 @@
 
 ## Overview of the Transport Layer in the Internet
 
-인터넷은 애플리케이션 계층에 **UDP(User Datagram Protocol, 사용자 데이터그램 프로토콜)**와 **TCP(Transmission Control Protocol, 전송 제어 프로토콜)** 두 가지 서로 다른 전송 계층 프로토콜을 제공하고 있다. 
+인터넷은 애플리케이션 계층에 **UDP(User Datagram Protocol, 사용자 데이터그램 프로토콜)**와 **TCP(Transmission Control Protocol, 전송 제어 프로토콜)** 두 가지 서로 다른 전송 계층 프로토콜을 제공합니다. 
 
 UDP는 **신뢰할 수 없는** 비연결 서비스를, TCP는 **신뢰할 수 있는** 연결 지향 서비스를 제공한다. 네트워크 애플리케이션을 설계할 때, 개발자는 이 두 전송 프로토콜 중 하나를 선택해야 한다.
 
@@ -143,7 +143,108 @@ clientSocket.connect((serverName, 12000))
 
 # 3.3 Connectionless Transport : UDP
 
+### UDP 동작 개요
+
+> UDP(User Datagram Protocol)는 비연결형 트랜스포트 계층 프로토콜로, TCP와 달리 연결 설정 과정이 없다.
+
+- UDP는 간단한 **Multi/Demultiplexing 기능과 오류 검사 기능**만 제공하며, 송신자와 수신자 간의 데이터 전송에 있어 최소한의 작업만 수행하는 전송계층 프로토콜 이다.
+
+### UDP 동작 방식
+
+1. UDP는 송신 측에서 애플리케이션 프로세스로부터 메시지를 받아 이를 **네트워크 계층에 전달**한다.
+
+2. UDP는 데이터를 전송하기 위해 송신 측에서 출발지 포트 번호와 목적지 포트 번호를 설정하고, 이를 UDP 헤더에 포함시켜 세그먼트를 생성한 후 네트워크 계층으로 전달한다.
+
+3. 수신 측에서 네트워크 계층으로부터 받은 메시지를 애플리케이션 프로세스로 전달한다.
+
+### UDP 특징
+
+- `비연결형`: 송신자와 수신자 간에 데이터 전송을 위한 사전 연결 설정 과정(*Handshake*)가 없다. 즉, 연결 설정에 따른 지연이 발생하지 않는다.
+
+- `오류 검사 기능`: UDP는 오류 검출을 위한 체크섬 필드를 제공하여, 데이터 전송 중 발생할 수 있는 비트 오류를 검사한다. 수신 측에서는 체크섬을 통해 세그먼트에 오류가 있는지를 확인한다. 오류 검사 기능에 대한 자세한 설명은, 3.3.2절에서 설명한다!
+
+- `간단한 헤더 구조`: UDP 헤더는 **8바이트**로 매우 간단하다. 각 2바이트로 이루어진 `출발지 포트 번호`, `목적지 포트 번호`, `길이`, `체크섬`의 4개 필드로 구성되어 있다.
+
+### UDP 사용 사례
+![](https://velog.velcdn.com/images/calzone0404/post/4a55e633-9dc7-4bfe-a723-9310c392d765/image.png)
+
+UDP는 실시간 애플리케이션, 멀티미디어 스트리밍, DNS, 네트워크 관리 프로토콜 등에서 주로 사용된다. 어플리케이션 계층에서 UDP를 사용하는 이유는 UDP의 간단한 특징 때문이다.
+
+1. `데이터 전송의 정교한 제어`: 애플리케이션이 데이터를 보낼 때, TCP의 혼잡 제어에 방해받지 않고 원하는 대로 전송할 수 있다.
+
+2. `연결 설정 지연 없음`: TCP의 연결 설정 과정 없이 즉시 데이터를 전송할 수 있다.
+
+3. `연결 상태 유지 없음`: UDP는 연결 상태를 유지하지 않기 때문에 몇몇 프로토콜에서는 더 많은 클라이언트를 동시에 처리할 수 있다.
+
+4. `헤더 크기`: UDP 헤더는 8바이트인데, TCP는 20바이트를 사용한다.
+
+### UDP와 TCP의 비교
+
+> `TCP`는 **신뢰적인 데이터 전송**을 보장하고, 데이터의 **순서 보장**, **흐름 제어** 및 **혼잡 제어**를 제공한다.
+
+> 반면`UDP`는 **비신뢰적인 데이터 전송**을 제공하며, **최소한의 오류 검사 기능**만 제공한다.
+
+따라서, UDP는 간단하고 빠르며, 특정 상황에서 TCP보다 더 적합할 수 있다. 특히, 실시간 애플리케이션이나 멀티미디어 스트리밍과 같은 어플리케이션에서 유리하다. (Chrome의 QUIC 프로토콜)
+
+## 3.3.1 UDP 세그먼트 구조
+
+### UDP 세그먼트의 구성
+![](https://velog.velcdn.com/images/calzone0404/post/bfd6046d-a6f9-4b3d-b5c1-89d0752772ae/image.png)
+
+UDP(User Datagram Protocol) 세그먼트는 위 그림처럼 간단한 구조를 가지고 있으며, 다음과 같은 필드로 구성된다.
+
+1. `출발지 포트 번호` (Source Port Number): 16비트 길이로, 송신자의 포트를 식별하는데 필요하다. 출발지 포트 번호는 수신자가 송신자에게 응답을 보낼 때 사용한다.
+
+2. `목적지 포트 번호` (Destination Port Number): 16비트 길이로, 수신자의 포트를 식별하는데 필요하다. 이 필드는 **어떤 수신지의 어플리케이션 소켓으로 보낼 지 결정**할 때 필요하다.
+
+3. `길이` (Length): 16비트 길이로, UDP 헤더와 데이터의 **총 길이**를 바이트 단위로 기록한다. 최소 값은 8바이트 (헤더의 길이)이다.
+
+4. `체크섬` (Checksum): 16비트 길이로, **오류 검출**을 위해 사용된다. 3.3.2절에서 자세한 설명을 하도록 하겠다.
+
+5. `데이터 필드` : 어플리케이션 데이터가 위치하는 곳이다. 예를 들면, DNS의 경우 데이터 필드에 질의 메세지 또는 응답 메세지가 들어있다. 스트리밍 비디오 어플리케이션 같은 경우에는 영상 정보가 데이터 필드에 들어간다.
+
+## 3.3.2 UDP 체크섬의 역할
+
+> 체크섬은 UDP 세그먼트가 전송 중 손상되었는지 확인하기 위해 사용된다. 
+
+송신 측에서 UDP는 세그먼트 내의 모든 **16비트 워드(word)를 더한 후**, 다시 **1의 보수**를 취하여 체크섬 필드에 삽입한다.
+
+> 수신 측에서는 이 체크섬을 검증하여 오류를 감지할 수 있다.
+
+- 오류가 없는 경우, 수신 측에서 계산한 값이 0xFFFF**(모든 숫자가 1)**이다. 
+
+- 그렇지 않으면, **즉, 하나이상 0이 발생한다면** 세그먼트에 **오류가 발생**한 것으로 판단할 수 있다.
+
+### 체크섬 계산 예시
+
+```text
+16비트 워드 세 개: 
+	0110011001100000, 
+    0101010101010101, 
+    1000111100001100
+    
+첫 두 워드의 합: 
+	0110011001100000 + 
+    0101010101010101 
+    = 1011101110110101
+    
+이 합에 세 번째 워드를 더하면: 
+	1011101110110101 + 
+    1000111100001100 
+    = 0100101011000010 (오버플로 발생) -> 자리올림
+    
+세 워드의 합 연산 결과에 1의 보수를 취하면:
+0100101011000010의 1의 보수는 1011010100111101
+이 값이 바로 체크섬이다.
+```
+
+> 이제, 수신측에서도 3개의 워드와 체크섬 값을 받게 되는데,
+세 워드의 합 + 체크섬 비트를 연산해서 0xFFFF가 되면 `오류없음`으로 판단하게 되고, 하나라도 0이 존재하면 `오류발생`으로 판단한다.
+
 # 3.4 Principles of Reliable Data Transfer
+
+![](https://velog.velcdn.com/images/calzone0404/post/7169bdd1-7e10-4bf8-b0c9-6bfbc74d5fc3/image.png)
+
 # 3.5 연결 지향형 프로토콜 TCP
 
 ## TCP Connection
@@ -235,10 +336,10 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 ![estRTT](https://velog.velcdn.com/images/calzone0404/post/f2706a40-046f-4579-a0a8-f105250e4e9a/image.png)
 
 ### 재전송 타임아웃 주기 설정
-- DevRTT : SampleRTT가 EstimatedRTT와 얼마나 벗어나 있는지에 대해서 정의한다.  
+- DevRTT : SampleRTT가 EstimatedRTT와 얼마나 벗어나 있는지에 대해서 정의한다.
 ![devRTT](https://velog.velcdn.com/images/calzone0404/post/0445d061-d670-40c8-963d-5b889eddee76/image.png)
 
-- Timeout값은 EstimatedRTT에 약간의 여윳값을 더하여 구한다.  
+- Timeout값은 EstimatedRTT에 약간의 여윳값을 더하여 구한다.
 ![TimeoutInterval](https://velog.velcdn.com/images/calzone0404/post/4ef67e52-9a77-4d0d-8860-46d871fcdd63/image.png)
 
 
@@ -251,19 +352,21 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 
 - App으로부터 Data 수신 시
   - Sequence 번호를 붙여서 Segment를 생성한다.
-  - 아직 다른 Segment에 대해 실행중이 아니라면, Timer를 시작한다.  
+  - 아직 다른 Segment에 대해 실행중이 아니라면, Timer를 시작한다.
+  <br>
 - Timer Timeout
   - Timeout 발생 시 Segment를 재전송한다.
-  - Timer를 초기화하고, 다시 시작한다.  
+  - Timer를 초기화하고, 다시 시작한다.
+  <br>
 - ACK 수신 시
-  일단 TCP는 변수 SendBase와 ACK값 $y$를 비교한다.
+  일단 TCP는 변수 SendBase와 ACK값 $$y$$를 비교한다.
   
   >SendBase : ACK가 확인 되지 않은 / 가장 오래된 바이트의 순서 번호
   >SendBase-1 : 수신자에게서 정확하게 차례대로 수신되었음을 알리는 마지막 바이트의 순서번호
   
-  TCP는 누적된 ACK를 사용하고, $y$는 $y$바이트 이전의 모든 바이트의 수신을 확인한다.
+  TCP는 누적된 ACK를 사용하고, $$y$$는 $$y$$바이트 이전의 모든 바이트의 수신을 확인한다.
   
-  이때, $y > SendBase$이면, ACK는 이전에 ACK응답이 안 된 하나 이상의 Segment들을 확인한다.
+  이때, $$y > SendBase$$이면, ACK는 이전에 ACK응답이 안 된 하나 이상의 Segment들을 확인한다.
     1. 송신자는 자신의 SendBase 변수를 갱신
     2. 아직 ACK응답이 안 된 Segment가 존재한다면, Timer를 다시 시작
     
@@ -341,7 +444,7 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
     1. LastByteRead : B의 Process에 의해 Buffer로부터 읽힌 Data Stream의 마지막 Byte 번호
       - LastByteRcvd : B에게 도착하여 Receive Buffer에 저장된 Data Stream의 마지막 Byte 번호
       - **RcvWindow(rwnd)** : 버퍼의 여유 공간
-        = RcvBuffer $-$ $($LastByteRcvd $-$ LastByteRead$)$
+        = RcvBuffer $$-$$ $$($$LastByteRcvd $$-$$ LastByteRead$$)$$
       ![](https://velog.velcdn.com/images/calzone0404/post/474bc390-1af5-45b2-ba0b-2ab815c6ba76/image.png)
 
 
@@ -397,29 +500,29 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 
 ## 혼잡의 원인과 비용 - 예시 1
 - 두 Host A, B가 각각 출발지와 목적지 사이에서 단일 Router를 공유
-- A와 B의 Process가 $λ_{in}$의 전송률로 데이터를 전송
-- Output Link의 수용량 : $R$
+- A와 B의 Process가 $$λ_{in}$$의 전송률로 데이터를 전송
+- Output Link의 수용량 : $$R$$
 - Router Buffer는 무한하다고 가정하자
 ![](https://velog.velcdn.com/images/calzone0404/post/8785dc16-82bc-4739-bea3-3592ebd8cd33/image.png)
 
 ***
 1. 연결 당 처리량
 ![](https://velog.velcdn.com/images/calzone0404/post/297f5ea7-4d2b-46c3-9865-a67ab95bcf27/image.png)
-0 ~ $R/2$ 사이에서의 전송 속도 : 수신자 측의 처리량은 송신자의 전송률과 같다.
-$R/2$ 이상의 전송 속도 : 처리량은 $R/2$
-즉, A와 B가 전송률을 아무리 높여도 각자 $R/2$보다 높은 처리량을 얻을 수 없음
+0 ~ $$R/2$$ 사이에서의 전송 속도 : 수신자 측의 처리량은 송신자의 전송률과 같다.
+$$R/2$$ 이상의 전송 속도 : 처리량은 $$R/2$$
+즉, A와 B가 전송률을 아무리 높여도 각자 $$R/2$$보다 높은 처리량을 얻을 수 없음
 
 ***
 2. 평균 지연
 ![](https://velog.velcdn.com/images/calzone0404/post/8fac3ee9-866e-4266-9da9-c2beca2520e5/image.png)
-전송률이 $R/2$에 근접할 경우 : 평균 지연은 점점 커진다.
-전송률이 $R/2$를 초과할 경우 : $Infinity$
+전송률이 $$R/2$$에 근접할 경우 : 평균 지연은 점점 커진다.
+전송률이 $$R/2$$를 초과할 경우 : $$Infinity$$
 
 ## 혼잡의 원인과 비용 - 예시 2
 - 송신자 A, B
 - 유한한 크기의 Buffer를 가진 라우터 1개
-- A와 B의 Process가 $λ_{in}$의 전송률로 데이터를 전송
-- Output Link의 수용량 : $R$
+- A와 B의 Process가 $$λ_{in}$$의 전송률로 데이터를 전송
+- Output Link의 수용량 : $$R$$
 ![](https://velog.velcdn.com/images/calzone0404/post/7126c959-670e-43c2-a4d1-692f648c6a6a/image.png)
 
 라우터가 버퍼의 양이 유한하므로 버퍼가 가득차게 된다면 도착하는 패킷은 버려진다.
@@ -428,8 +531,8 @@ $R/2$ 이상의 전송 속도 : 처리량은 $R/2$
 ![](https://velog.velcdn.com/images/calzone0404/post/394d60cd-fc14-43e9-bf48-085557e8cfe6/image.png)
 
 A. 어떠한 손실도 발생하지 않음
-- 연결의 처리량 : $λ_{in}$
-- 송신률은 $R/2$를 초과할 수 없음
+- 연결의 처리량 : $$λ_{in}$$
+- 송신률은 $$R/2$$를 초과할 수 없음
 
 B. 패킷이 손실되었다는 것을 알고 송신자가 재전송 하는 경우
 - 제공된 부하 λ'in이 R/2일 경우 : 데이터의 전송률은 R/3
