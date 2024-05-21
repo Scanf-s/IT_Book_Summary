@@ -473,22 +473,18 @@ SR 수신자는 패킷의 순서와는 무관하게 손상 없이 전달된 패�
 
 ## TCP Connection
 
-> Connection-Oriented(연결 지향형)
-- TCP는 어떤 데이터를 다른 프로세스에 보내기 전에, 두 프로세스가 서로 Handshake과정을 거쳐야 한다.
+> Connection-Oriented(연결 지향형) :
+> TCP는 어떤 데이터를 다른 프로세스에 보내기 전에, 두 프로세스가 서로 Handshake 과정을 거쳐야 한다.
+> 즉, 데이터 전송을 시작하기 전에 전송을 보장하는 사전 정보를 교환합니다.
 
-즉, 데이터 전송을 시작하기 전에, 전송을 보장하는 사전 정보를 보낸다.
-
-TCP 연결은 Full-Duplex를 제공하며, 항상 Point to Point 연결을 통해 통신한다.
-
-따라서 Multicasting은 불가능하다.
+TCP 연결은 Full-Duplex를 제공하며, 항상 Point to Point 연결을 통해 통신한다. 따라서 Multicasting은 불가능하다.
 
 ## TCP 연결 과정
+- Client Process: 연결을 초기화하는 프로세스
+- Server Process: 연결 요청을 수락하는 프로세스
 
-- Client Process : 연결을 초기화하는 프로세스
-- Server Process
+## 3 Way Handshake (후에 자세히 다룬다)
 
-### 3 Way Handshake (후에 자세히 다룬다)
-- 동작과정
 1. Client Process는 Server Process와 연결을 설정하려고 시도하는 SYN을 날린다.
 2. Server Process는 SYN에 대해 답장 신호 ACK를 날린다.
 3. Client Process는 ACK 신호에 대해 ACK 신호를 날린다.
@@ -497,37 +493,37 @@ TCP 연결은 Full-Duplex를 제공하며, 항상 Point to Point 연결을 통�
 이러한 과정을 통해 양쪽 모두 데이터를 전송할 준비가 되었다는 것을 보장할 수 있게 된다.
 
 ## TCP Segment 구조
-- TCP Segment : TCP Header + Client가 보내려는 Data
 
-1. Header가 구성하는 요소
-   - 출발지와 목적지 포트 번호
-   - 체크섬 필드
-   - 32비트 SYN 번호 필드
-   - 32비트 ACK 번호 필드
-   - 16비트 Window 정보
-     - Window는 수신자가 받아들이려는 바이트의 크기를 나타내는데 사용한다.
-   - 4비트의 TCP Header 길이 필드
-   - Option Field
-   - Flag Field
-     - ACK : ACK 필드에 있는 값이 유효한지 확인하는 Flag
-     - RST, SYN, FIN : 연결 설정 및 해제에 사용
-     - PSH : 수신자가 데이터를 상위 계층에 즉시 전달해야 한다고 알리는 Flag
-     - URG : 긴급 데이터 표시 Flag
-     
-     ![](https://velog.velcdn.com/images/calzone0404/post/42cc3376-6620-4189-9582-8c937efd7cad/image.png)
+TCP Segment는 TCP Header와 Client가 보내려는 Data로 구성된다.
+
+### Header 구성 요소
+- 출발지와 목적지 포트 번호
+- 체크섬 필드
+- 32비트 Sequence 번호 필드
+- 32비트 ACK 번호 필드
+- 16비트 Window 크기
+	- Window는 수신자가 받아들이려는 바이트의 크기를 나타냅니다.
+- 4비트의 TCP Header 길이 필드
+- Option 필드
+- Flag 필드
+- ACK: ACK 필드의 값이 유효한지 확인하는 Flag
+- RST, SYN, FIN: 연결 설정 및 해제에 사용
+- PSH: 수신자가 데이터를 상위 계층에 즉시 전달해야 함을 알리는 Flag
+- URG: 긴급 데이터 표시 Flag
+
+  ![](https://velog.velcdn.com/images/calzone0404/post/42cc3376-6620-4189-9582-8c937efd7cad/image.png)
 
 ## Sequence 번호와 ACK 번호
 
 실제 통신을 시작할 때, 수많은 패킷이 송수신 된다. 그런데, SYN과 ACK 번호가 존재하지 않는다면, 수신한 ACK 패킷이 어떤 패킷에 대한 ACK인지 모른다. 이를 위해서 Sequence 번호가 필요하다.
 
 - **Sequence 번호**는 TCP Segment의 연속된 데이터 번호이다. 이때, Sequence 번호는 전송되는 Segment의 가장 앞에 있는 숫자를 표기한다.
->예를 들어, 1129 ~ 1181까지의 Byte Stream을 전송한다면 Sequence Number는 **1129**이다.
-  
-- **ACK 번호**는 상대방으로부터 받아야 하는 다음 TCP Segment 데이터 번호이다.
 
-  >해당 번호 앞까지 데이터 처리를 완료하여 해당 번호 TCP Segment를 전송해달라고 요청하는 의미이다.
+> 예를 들어, 1129 ~ 1181까지의 Byte Stream을 전송한다면 Sequence Number는 **1129**이다.
   
-  > 예를 들어, 패킷을 1181까지 처리했다고 했을 때, 다음 번호인 1182부터 TCP Segment 데이터를 요청하기 위해 **ACK번호는 1182**로 표기된다.
+- **ACK 번호**는 상대방으로부터 받아야 하는 다음 TCP Segment 데이터 번호이다. 즉, 해당 번호 앞까지 데이터 처리를 완료하여 해당 번호 TCP Segment를 전송해달라고 요청하는 의미이다.
+  
+> 예를 들어, 1181까지 처리한 경우, 다음 번호인 1182부터 TCP Segment 데이터를 요청하기 위해 ACK 번호는 1182이다.
   
 ### Telnet 통신 예시
 ![telnet](https://velog.velcdn.com/images/calzone0404/post/f85bd5c0-6f46-48eb-800e-040c0a3e8235/image.png)
@@ -545,27 +541,31 @@ Seq 43 : 43번째 데이터를 B로 송신한다.
 ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segment를 보내달라고 요청한다.
 
 ## 왕복시간 Rount Trip Time (RTT) & Timeout
+
 - RTT : 세그먼트가 전송된 시간부터 확인 응답 될 때 까지의 시간
 
 > TCP는 손실된 Segment를 발견하기 위해 **Timeout/재전송 방법**을 사용한다.
 이때, Timeout 시간은 연결의 **RTT** 시간보다 당연하게도 더 커야한다.
 
 ### 왕복 시간 예측
+
 - SampleRTT : Segment가 송신된 시간으로부터, 그 Segment에 대한 ACK신호가 도착한 시간까지의 시간 길이
 
-  대부분의 TCP는 한 번에 하나의 SampleRTT 측정을 시행한다.
+> 대부분의 TCP는 한 번에 하나의 SampleRTT 측정을 시행한다.
   
 - SampleRTT 값은 라우터에서의 혼잡, 종단 시스템에서의 부하 변화 때문에 Segment마다 시간이 전부 다르므로 **평균적인 RTT 시간(EstimatedRTT)**을구한다.
 
 ![estRTT](https://velog.velcdn.com/images/calzone0404/post/f2706a40-046f-4579-a0a8-f105250e4e9a/image.png)
 
 ### 재전송 타임아웃 주기 설정
+
 - DevRTT : SampleRTT가 EstimatedRTT와 얼마나 벗어나 있는지에 대해서 정의한다.
+
 ![devRTT](https://velog.velcdn.com/images/calzone0404/post/0445d061-d670-40c8-963d-5b889eddee76/image.png)
 
 - Timeout값은 EstimatedRTT에 약간의 여윳값을 더하여 구한다.
-![TimeoutInterval](https://velog.velcdn.com/images/calzone0404/post/4ef67e52-9a77-4d0d-8860-46d871fcdd63/image.png)
 
+![TimeoutInterval](https://velog.velcdn.com/images/calzone0404/post/4ef67e52-9a77-4d0d-8860-46d871fcdd63/image.png)
 
 ## 신뢰성 있는 데이터 전송
 
@@ -577,24 +577,28 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 - App으로부터 Data 수신 시
   - Sequence 번호를 붙여서 Segment를 생성한다.
   - 아직 다른 Segment에 대해 실행중이 아니라면, Timer를 시작한다.
-  <br>
+
+---
+
 - Timer Timeout
   - Timeout 발생 시 Segment를 재전송한다.
   - Timer를 초기화하고, 다시 시작한다.
-  <br>
+
+---
+
 - ACK 수신 시
-  일단 TCP는 변수 SendBase와 ACK값 $$y$$를 비교한다.
+  일단 TCP는 변수 SendBase와 ACK값 $y$를 비교한다.
   
-  >SendBase : ACK가 확인 되지 않은 / 가장 오래된 바이트의 순서 번호
-  >SendBase-1 : 수신자에게서 정확하게 차례대로 수신되었음을 알리는 마지막 바이트의 순서번호
+  > SendBase : ACK가 확인 되지 않은 / 가장 오래된 바이트의 순서 번호
+  > SendBase - 1 : 수신자에게서 정확하게 차례대로 수신되었음을 알리는 마지막 바이트의 순서번호
   
-  TCP는 누적된 ACK를 사용하고, $$y$$는 $$y$$바이트 이전의 모든 바이트의 수신을 확인한다.
+  TCP는 누적된 ACK를 사용하고, $y$는 $y$바이트 이전의 모든 바이트의 수신을 확인한다.
   
-  이때, $$y > SendBase$$이면, ACK는 이전에 ACK응답이 안 된 하나 이상의 Segment들을 확인한다.
+  이때, $y > SendBase$이면, ACK는 이전에 ACK응답이 안 된 하나 이상의 Segment들을 확인한다.
     1. 송신자는 자신의 SendBase 변수를 갱신
     2. 아직 ACK응답이 안 된 Segment가 존재한다면, Timer를 다시 시작
     
-- 예시
+### 예시
 ![](https://velog.velcdn.com/images/calzone0404/post/173f8eca-18f9-4d39-baef-4d03af6da232/image.png)
 
 **오른쪽 그림 설명**
@@ -632,28 +636,34 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 - **Timeout주기가 때때로 김**
   긴 Timeout 주기는 Host간의 지연을 증가시킴.
   그러나, 송신자는 중복 ACK에 의한 Timeout이 일어나기 전에 패킷 손실 발견 가능
-  <br>
+  
+---
+
 - **중복 ACK**
   송신자가 이미 이전에 받은 ACK에 대한 재확인응답 ACK
-  <br>
+
+---
+
 - **빠른 재전송**
   만약 TCP 송신자가 같은 데이터에 대해 3개의 중복 ACK를 수신했다면,
   ACK된 Segment Data의 다음 3개의 Segment가 분실되었음을 의미한다.
   
   ![fastretrans](https://velog.velcdn.com/images/calzone0404/post/34eea288-0400-417d-9e01-8dfbf4b9459b/image.png)
+  
 위 그림을 보면 seg 100 전송이 실패하게 되어, ACK 100이 중복으로 전송되는 모습을 확인할 수 있다. 
 따라서 A는 Timeout이 일어나기 전에, 100이후로 데이터 전송이 실패했다고 판단하여 100~120에 대한 데이터를 다시 전송해준다.
 
 
 ## TCP 흐름 제어
 
->TCP는 송신자가 수신자의 버퍼를 Overflow시키는 것을 방지하기 위해 흐름 제어 서비스를 제공함
+> TCP는 송신자가 수신자의 버퍼를 Overflow시키는 것을 방지하기 위해 흐름 제어 서비스를 제공함
 
 따라서 TCP 송신자는 네트워크에서 **혼잡 제어**에 의해 송신이 억제될 수 있다.
 
-***
-- 흐름 제어 과정
->TCP는 Receive Window라는 변수를 통해 흐름 제어를 수행한다
+---
+
+### 흐름 제어 과정
+> TCP는 Receive Window라는 변수를 통해 흐름 제어를 수행한다
 
  Receive Window는 수신자가 가용한 버퍼 공간이 얼마나 되는지 알려주는데 사용한다.
  이때 TCP는 Full-Duplex 이므로 각 송신자는 별개의 Receive Window를 갖는다.
@@ -667,14 +677,13 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
   B의 Process는 Buffer로부터 데이터를 읽으며 변수를 정의한다.
     1. LastByteRead : B의 Process에 의해 Buffer로부터 읽힌 Data Stream의 마지막 Byte 번호
       - LastByteRcvd : B에게 도착하여 Receive Buffer에 저장된 Data Stream의 마지막 Byte 번호
-      - **RcvWindow(rwnd)** : 버퍼의 여유 공간
-        = RcvBuffer $$-$$ $$($$LastByteRcvd $$-$$ LastByteRead$$)$$
-      ![](https://velog.velcdn.com/images/calzone0404/post/474bc390-1af5-45b2-ba0b-2ab815c6ba76/image.png)
+      - **RcvWindow(rwnd)** : 버퍼의 여유 공간 = RcvBuffer $-$ $($ LastByteRcvd $-$ LastByteRead $)$
 
+![](https://velog.velcdn.com/images/calzone0404/post/474bc390-1af5-45b2-ba0b-2ab815c6ba76/image.png)
 
 ## TCP 연결 관리
 
->TCP는 어떤 데이터를 다른 프로세스에 보내기 전에, 두 프로세스가 서로 Handshake과정을 거쳐야 한다.
+> TCP는 어떤 데이터를 다른 프로세스에 보내기 전에, 두 프로세스가 서로 Handshake과정을 거쳐야 한다.
 
 ### 3-way Handshake - 연결 수립
 
@@ -683,14 +692,18 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 1. Client TCP는 Servver에게 SYN을 송신한다.
    - 이때, SYN bit을 1로 설정한다 (SYN = 1)
    - Client는 최소 순서 번호(client_isn)을 임의로 선정해서 SYN을 보낼 때 같이 보낸다.
-   <br>
+
+---
+
 2. SYN Segment가 Server로 도착하면
    - Server는 SYN 번호를 추출한다.
    - 연결에 필요한 TCP Buffer와 변수를 할당한다.
    - Client TCP에게 SYNACK를 송신한다
      - 이때, SYNACK bit은 1로 설정된다 (SYN = 1)
      - client_isn을 순서 번호로 받았으므로, client_isn + 1을 SYNACK와 함께 송신한다
-   <br>  
+
+---
+
 3. Client가 연결 승인 Segment 수신시
    - Client는 연결에 필요한 TCP Buffer와 변수를 할당한다.
    - Client는 Server에게 SYNACK에 대한 확인 Segment를 송신한다
@@ -699,11 +712,10 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 
 ### 3-way Handshake - 연결 해제
 
->TCP 연결에 참여하는 두 Host중 하나가 연결을 끊을 수 있다.
+> TCP 연결에 참여하는 두 Host중 하나가 연결을 끊을 수 있다.
 연결이 끊어지면, 각각 할당했던 Buffer와 변수가 회수된다.
 
 ![](https://velog.velcdn.com/images/calzone0404/post/ab7fc695-fc43-402a-8497-e443d96b32b4/image.png)
-
 
 1. Client가 Process 종료 명령을 내리고, 연결 해제를 위해 **FIN = 1** 신호를 보낸다.
 2. Server가 FIN을 수신하면, Client에게 **ACK = 1**신호를 보낸다.
@@ -713,98 +725,108 @@ ACK 80 : A는 79에 대한 Segment 데이터를 받았으므로, 80번째 Segmen
 
 
 ### TCP Handshake 상태 변이 - Client
+
 ![](https://velog.velcdn.com/images/calzone0404/post/3a2881da-ff06-451a-a9aa-21301117b923/image.png)
 
 
 ### TCP Handshake 상태 변이 - Server
+
 ![](https://velog.velcdn.com/images/calzone0404/post/72c3b5b0-61a9-4e16-98f6-7ceeb7e78871/image.png)
 
+### 수정사항 및 추가사항
+
+수정할 점과 추가해야 할 점을 정리하여 반영하겠습니다.
+
 # 3.6 혼잡 제어의 원리
->Congestion : 너무 많은 송신자가 너무 높은 속도로 데이터를 보내려고 시도할 때 발생
+
+> **혼잡(Congestion)**: 너무 많은 송신자가 너무 높은 속도로 데이터를 보내려고 시도할 때 발생
 
 ## 혼잡의 원인과 비용 - 예시 1
-- 두 Host A, B가 각각 출발지와 목적지 사이에서 단일 Router를 공유
-- A와 B의 Process가 $$λ_{in}$$의 전송률로 데이터를 전송
-- Output Link의 수용량 : $$R$$
-- Router Buffer는 무한하다고 가정하자
+
+- 두 Host A, B가 각각 출발지와 목적지 사이에서 단일 Router를 공유합니다.
+- A와 B의 프로세스가 전송률 $λ_{in}$으로 데이터를 전송합니다.
+- Output Link의 수용량: $R$
+- Router Buffer는 무한하다고 가정합니다.
+
 ![](https://velog.velcdn.com/images/calzone0404/post/8785dc16-82bc-4739-bea3-3592ebd8cd33/image.png)
 
-***
-1. 연결 당 처리량
-![](https://velog.velcdn.com/images/calzone0404/post/297f5ea7-4d2b-46c3-9865-a67ab95bcf27/image.png)
-0 ~ $$R/2$$ 사이에서의 전송 속도 : 수신자 측의 처리량은 송신자의 전송률과 같다.
-$$R/2$$ 이상의 전송 속도 : 처리량은 $$R/2$$
-즉, A와 B가 전송률을 아무리 높여도 각자 $$R/2$$보다 높은 처리량을 얻을 수 없음
+### 1. 연결 당 처리량
 
-***
-2. 평균 지연
+![](https://velog.velcdn.com/images/calzone0404/post/297f5ea7-4d2b-46c3-9865-a67ab95bcf27/image.png)
+
+0 ~ $R/2$ 사이의 전송 속도에서는 수신 측의 처리량은 송신자의 전송률과 같습니다. 그러나 전송 속도가 $R/2$를 초과하면 처리량은 $R/2$로 제한됩니다. 즉, A와 B가 전송률을 아무리 높여도 각자의 처리량은 $R/2$보다 높아질 수 없습니다.
+
+### 2. 평균 지연
+
 ![](https://velog.velcdn.com/images/calzone0404/post/8fac3ee9-866e-4266-9da9-c2beca2520e5/image.png)
-전송률이 $$R/2$$에 근접할 경우 : 평균 지연은 점점 커진다.
-전송률이 $$R/2$$를 초과할 경우 : $$Infinity$$
+
+전송률이 $R/2$에 근접할 경우 평균 지연은 점점 커집니다. 전송률이 $R/2$를 초과하면 평균 지연은 무한대가 됩니다.
 
 ## 혼잡의 원인과 비용 - 예시 2
-- 송신자 A, B
+
+- 송신자 A와 B
 - 유한한 크기의 Buffer를 가진 라우터 1개
-- A와 B의 Process가 $$λ_{in}$$의 전송률로 데이터를 전송
-- Output Link의 수용량 : $$R$$
+- A와 B의 프로세스가 전송률 $λ_{in}$으로 데이터를 전송합니다.
+- Output Link의 수용량: $R$
+
 ![](https://velog.velcdn.com/images/calzone0404/post/7126c959-670e-43c2-a4d1-692f648c6a6a/image.png)
 
-라우터가 버퍼의 양이 유한하므로 버퍼가 가득차게 된다면 도착하는 패킷은 버려진다.
-따라서, 패킷이 버려지게 되면 송신자가 해당 패킷들을 재전송한다.
-***
+라우터의 버퍼 크기가 유한하므로 버퍼가 가득 차면 도착하는 패킷은 버려집니다. 패킷이 버려지면 송신자가 해당 패킷들을 재전송하게 됩니다.
+
+### 다양한 시나리오
+
 ![](https://velog.velcdn.com/images/calzone0404/post/394d60cd-fc14-43e9-bf48-085557e8cfe6/image.png)
 
-A. 어떠한 손실도 발생하지 않음
-- 연결의 처리량 : $$λ_{in}$$
-- 송신률은 $$R/2$$를 초과할 수 없음
+A. **어떠한 손실도 발생하지 않음**:
+   - 연결의 처리량: $λ_{in}$
+   - 송신률은 $R/2$를 초과할 수 없습니다.
 
-B. 패킷이 손실되었다는 것을 알고 송신자가 재전송 하는 경우
-- 제공된 부하 λ'in이 R/2일 경우 : 데이터의 전송률은 R/3
-- 전송된 데이터의 R/2 중
-  0.333R 바이트/초는 원래의 데이터
-  초당 0.166R 바이트/초(평균)는 재전송 데이터
-  
->송신자는 Buffer Overflow 때문에 버려진 패킷에 대해 다시 재전송을 수행한다.
+B. **패킷 손실 및 재전송 발생**:
+   - 제공된 부하 $λ_{in}$이 $R/2$일 경우 데이터의 전송률은 $R/3$
+   - 전송된 데이터 중 $R/2$는 원래 데이터이고, $0.166R$은 재전송 데이터입니다.
 
-C. 송신자에서 너무 일찍 타임아웃되어 패킷이 손실되지 않았지만, 큐에서 지연되고 있는 패킷을 재전송하는 경우
-
-- 원래의 데이터 패킷과 재전송 패킷 둘 다 수신자에게 도착한다.
-- 각 패킷이 라우터에 의해 두 번씩 전달된다고 가정했을 때, 제공된 부하가 R/2일 때의 처리량은 R/4
-
-> 커다란 지연으로 인한 송신자의 불필요한 재전송은 라우터가 패킷의 불필요한 복사본들을 전송하는 데 Output Link의 대역폭을 사용하는 원인
+C. **타임아웃으로 인한 불필요한 재전송**:
+   - 원래 데이터와 재전송 데이터가 모두 수신자에게 도착합니다.
+   - 제공된 부하가 $R/2$일 때의 처리량은 $R/4$입니다.
+   - 지연으로 인해 불필요한 재전송이 발생하고, 라우터는 불필요한 복사본들을 전송합니다.
 
 ## 혼잡 제어에 대한 접근법
 
-### 종단 간 혼잡제어
-> 네트워크 계층은 Congestion Control을 위해 Transport Layer에게 어떠한 직접적인 지원을 받지 않음
+### 종단 간 혼잡 제어
 
-- TCP Segment 손실 및 증가하는 RTT 지연값을 네트워크 혼잡 발생의 신호로 간주함
-- TCP는 그에 따라 Window size를 줄여버림
+> 네트워크 계층은 Congestion Control을 위해 Transport Layer에게 직접적인 지원을 받지 않습니다.
+
+- TCP Segment 손실 및 증가하는 RTT 지연값을 네트워크 혼잡 발생의 신호로 간주합니다.
+- TCP는 그에 따라 Window size를 줄입니다.
 
 ### 네트워크 지원 혼잡 제어
-> 라우터들이 네트워크 안에서 Congestion과 관련된 Feedback을 송신자, 수신자 또는 Network 참여자 모두에게 받는다.
 
-#### ATM ABR(Available Bite Rate) 혼잡제어
-- 라우터는 자신의 Output Link에 제공할 수 있는 전송률을 송신자에게 명확히 알릴 수 있게 해준다.
+> 라우터들이 네트워크 내에서 Congestion과 관련된 Feedback을 송신자, 수신자 또는 Network 참여자 모두에게 전달합니다.
 
-- 만약 송신자의 path가 아직 여유롭다면, 이용가능한 대역폭 안에서 송신을 수행한다.
+#### ATM ABR(Available Bit Rate) 혼잡 제어
 
-- 만약 송신자의 path가 혼잡하다면, 송신자는 최소 보장 속도로 송신하도록 제어됨
+- 라우터는 자신의 Output Link에 제공할 수 있는 전송률을 송신자에게 명확히 알릴 수 있습니다.
+- 송신자의 경로가 여유롭다면 이용 가능한 대역폭 내에서 송신을 수행합니다.
+- 송신자의 경로가 혼잡하다면 송신자는 최소 보장 속도로 송신하도록 제어됩니다.
 
 **RM (Resource Management)**
-- 송신자가 보낸 데이터 Cell들을 분산하여 전송함
-- RM Cell이 가지고 있는 bit들은 **Switch**에서 설정함
+- 송신자가 보낸 데이터 Cell들을 분산하여 전송한다.
+- RM Cell의 비트들은 Switch에서 설정된다. 
+
+---
 
 # 3.7 혼잡 제어
-## 혼잡 제어
-- 일단 전송률을 올리고, 패킷 Loss가 발생하기 전까지 사용 가능한 대역폭을 탐색한다.
 
-- **Addictive Increase** : Congestion Window Size (CongWin)을 RTT마타 1MSS씩 loss가 발생하기 전까지 증가시킨다.
+## 3.7.1 전통적인 혼잡 제어 방식
 
-- **Multiplicative Decrease** : loss 발생 시 CongWin을 절반으로 줄인다.
+- **일단 전송률을 올리고**, 패킷 손실이 발생하기 전까지 사용 가능한 대역폭을 탐색한다.
+
+- **Additive Increase** : 혼잡 윈도 크기(CongWin)을 RTT마다 1 MSS씩 손실이 발생하기 전까지 증가시킨다.
+
+- **Multiplicative Decrease** : 손실 발생 시 CongWin을 절반으로 줄인다.
 
 ### TCP 송신자가 자신의 송신률을 제한하는 방법
-> 송신 측에서 동작하는 TCP 혼잡 제어 메커니즘은 추가적인 변수인 **혼잡 윈도(congestion window)**를 추적한다.
+> 송신 측에서 동작하는 TCP 혼잡 제어 메커니즘은 추가적인 변수인 **혼잡 윈도(congestion window, cwnd)**를 추적한다.
 
 이때, 송신하는 쪽에서 ACK가 응답을 받지 못한 데이터의 양은 CongWin과 Receive Window(수신 윈도 = 버퍼의 여유 공간)의 최솟값을 초과하지 않을 것이다.
 
@@ -813,63 +835,64 @@ C. 송신자에서 너무 일찍 타임아웃되어 패킷이 손실되지 않�
 따라서 CongWin의 값을 조절하여 송신자는 링크에 데이터를 전송하는 속도를 조절할 수 있다.
 
 ### TCP 송신자가 혼잡을 감지하는 방법
-- Loss 발생 = 3개의 중복된 ACK 신호를 받거나, Timeout이 된 경우
-이때, 송신자는 Loss 발생 이후 CongWin을 줄여버린다.
+- 손실 발생 = 3개의 중복된 ACK 신호를 받거나, Timeout이 된 경우. 이때 송신자는 손실 발생 이후 CongWin을 줄인다.
 
-## TCP Slow Start
-1. TCP 연결이 시작되면, CongWin = 1MSS로 초기화 한다
-이때, 초기 전송률은 다음과 같다. **MSS/RTT**
+#### 1. TCP Slow Start
+1. TCP 연결이 시작되면, CongWin = 1MSS로 초기화 한다. 이때 초기 전송률은 MSS/RTT이다.
 
-2. 처음 Loss event가 발생하기 전까지는 지수적으로 TCP 전송률을 늘려나간다
-   - 즉, RTT마다 CongWin값을 2배씩 증가시킨다
-   
-> 처음 전송률은 느리지만, RTT가 지날수록, 지수적으로 빠르게 전송률이 증가하게 된다.
+2. 처음 손실 이벤트가 발생하기 전까지는 지수적으로 TCP 전송률을 늘려나간다.
+   - 즉, RTT마다 CongWin값을 2배씩 증가시킨다.
 
-### 혼잡 회피 (Inferring Loss)
+> 처음 전송률은 느리지만, RTT가 지날수록 지수적으로 빠르게 전송률이 증가하게 된다.
 
+#### 2. 혼잡 회피 (Congestion Avoidance)
 - 3개의 중복된 ACK가 전달되었다면, **CongWin**은 절반으로 줄고, 선형적으로 증가한다.
 
-- Timeout이 발생하였다면, **CongWin**은 1MSS로 초기화 되고, 지수적으로 증가한다. 이후, 임계값 근처에서는 선형적으로 증가한다.
+- Timeout이 발생하였다면, **CongWin**은 1MSS로 초기화되고, 지수적으로 증가한다. 이후, 임계값 근처에서는 선형적으로 증가한다.
   - 정확히 언제 지수에서 선형으로 변환되는가?
-  > A: CongWin값이 Timeout 이전에 절반으로 줄어들었을 때, 선형으로 변환된다.
-  - 따라서 Loss 발생 시 임계값 선은 Loss 발생 직전 CongWin/2 값으로 설정된다.
+  > CongWin값이 Timeout 이전에 절반으로 줄어들었을 때 선형으로 변환된다.
+  - 따라서 손실 발생 시 임계값은 손실 발생 직전 CongWin/2 값으로 설정된다.
 
+#### 3. Fast Recovery (빠른 회복)
 
-## 정리
+빠른 회복은 추천되지만 필수는 아니다. 빠른 회복 단계에서는 3개의 중복 ACK가 수신되었을 때 혼잡 윈도를 절반으로 줄이고, 이후 새로운 데이터가 전송될 수 있도록 한다. 
+이는 혼잡 회피 단계와 유사하게 작동하지만, 손실이 발생한 후 전송률을 더 빨리 회복할 수 있도록 한다.
 
-1. CongWin이 임계값보다 낮으면 송신자는 Slow Start 단계에서 Window 크기는 기하급수적으로 증가
+### 결론
 
-2. CongWin이 임계값을 초과하면 송신자는 혼잡 회피 단계에 들어가고, Window 크기는 선형적으로 증가
+1. CongWin이 임계값보다 낮으면 송신자는 Slow Start 단계에서 윈도 크기를 기하급수적으로 증가시킨다.
+2. CongWin이 임계값을 초과하면 송신자는 혼잡 회피 단계에 들어가고, 윈도 크기는 선형적으로 증가한다.
+3. 3중 중복 ACK가 발생하면 임계값이 CongWin의 절반 값으로 설정되고 CongWin이 임계값으로 설정된다.
+4. Timeout이 발생하면 임계값은 CongWin의 절반 값으로 설정되고, CongWin은 1 MSS로 설정된다.
 
-3. 3중 중복 ACK가 발생하면 임계값이 CongWin의 절반 값으로 설정되고 CongWin이 임계값으로 설정
+## 3.7.2 명시적 혼잡 알림 (Explicit Congestion Notification, ECN)
+![image](https://github.com/Scanf-s/CS_Book_Summary/assets/105439069/f9f6c67b-5658-4202-843c-065727325735)
 
-4. Timeout이 발생하면 임계값은 CongWin의 절반 값으로 설정되고, CongWin은 1 MSS로 설정
+- ECN은 네트워크가 TCP 송신자와 수신자에게 혼잡 상태를 명시적으로 알리는 방법이다.
+- 네트워크 계층에서 IP 데이터그램 헤더의 두 비트가 ECN을 위해 사용된다.
+- 혼잡 상태를 나타내는 비트가 설정되면, 이 정보는 목적지 호스트로 전달되고, 목적지 호스트는 송신 호스트에 혼잡 상태를 알린다.
 
-## TCP 공정성
+### 지연 기반 혼잡 제어 (Delay-Based Congestion Control)
 
-각각 다른 종단 간의 경로를 갖지만, 모두 **R bps**의 전송률인 병목 링크(bottleneck link)를 지나는 **K개의 TCP 연결**을 생각해보자.
+- 지연 기반 혼잡 제어는 패킷 손실이 발생하기 전에 혼잡 상태를 탐지하기 위해 지연 시간을 측정하는 접근법이다.
+- TCP Vegas는 송신자가 모든 승인된 패킷의 RTT를 측정하고, 이 값을 기반으로 혼잡을 감지하여 송신률을 조절한다.
 
-각 연결은 큰 파일을 전송하고 있고, 병목 링크를 통과하는 UDP 트래픽은 없다고 가정했을 때,
- 
->각 연결의 평균 전송률이 **R/K**에 가깝다면 혼잡 제어는 메커니즘이 **공평**하다고 한다.
+## 3.7.3 TCP 공정성
+
+![image](https://github.com/Scanf-s/CS_Book_Summary/assets/105439069/d13971cc-dedf-43db-a344-e3196938ea37)
+
+각기 다른 종단 간의 경로를 갖지만, 모두 **R bps**의 전송률인 병목 링크를 지나는 **K개의 TCP 연결**을 생각해보자. 
+각 연결이 큰 파일을 전송하고 있고, 병목 링크를 통과하는 UDP 트래픽이 없다고 가정했을 때, 각 연결의 평균 전송률이 **R/K**에 가깝다면 혼잡 제어 메커니즘이 **공평**하다고 한다. 
 즉, 각 연결은 링크 대역폭을 동등하게 공유한다.
 
 ### 공평성과 UDP
 
-UDP는 혼잡 제어를 갖고 있지 않다.
-TCP의 관점에서 보면 UDP 상에서 수행되는 멀티미디어 애플리케이션은 공평하지 못하다.
+UDP는 혼잡 제어를 갖고 있지 않다. TCP의 관점에서 보면 UDP 상에서 수행되는 멀티미디어 애플리케이션은 공평하지 못하다. 즉, 다른 연결들과 협력하지도 않으며, 그들의 전송률을 적당하게 조절하지도 않는다.
 
-즉, 다른 연결들과 협력하지도 않으며, 그들의 전송률을 적당하게 조절하지도 않는다.
+TCP 혼잡 제어는 혼잡(손실) 증가에 대해 전송률을 감소시키므로, 그럴 필요가 없는 UDP 송신자들이 TCP 트래픽을 밀어낼 가능성이 있다.
 
-
-TCP 혼잡 제어는 혼잡(손실) 증가에 대해 전송률을 감소시키므로,
-그럴 필요가 없는 UDP 송신자들이 TCP 트래픽을 밀어낼 가능성이 있다.
-
-> UDP 트래픽으로 인해 인터넷이 마비되는 것을 방지하는 인터넷을 위한 혼잡 제어 방식의 개발이 필요하다.
+> UDP 트래픽으로 인해 인터넷이 마비되는 것을 방지하기 위한 혼잡 제어 방식의 개발이 필요하다.
 
 ### 공평성과 병렬 TCP 연결
 
-UDP 트래픽이 공평하게 행동하도록 강요하더라도,
-TCP 기반 애플리케이션의 다중 병렬 연결의 사용을 막을 방법이 없기 때문에 공평성 문제는 여전히 완전하게 해결되지 않는다.
-
-애플리케이션이 다중 병렬 연결을 사용할 때는 혼잡한 링크 대역폭의 더 많은 부분을 차지한다.
+UDP 트래픽이 공평하게 행동하도록 강요하더라도, TCP 기반 애플리케이션의 다중 병렬 연결의 사용을 막을 방법이 없기 때문에 공평성 문제는 여전히 완전하게 해결되지 않는다. 애플리케이션이 다중 병렬 연결을 사용할 때는 혼잡한 링크 대역폭의 더 많은 부분을 차지한다.
