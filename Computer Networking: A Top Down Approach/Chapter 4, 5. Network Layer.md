@@ -1,26 +1,44 @@
 # 4.1 소개
+
 ## 네트워크 계층
+
 - 전송계층의 **Segment**를 송신측에서 수신측으로 전송하는 역할
 - 송신측은 Segment를 **Datagram** 또는 **Packet**으로 캡슐화
 - 수신측은 Datagram을 수신하여, Segment로 변환 후 상위 계층인 전송 계층으로 전달
-- 모든 host, router는 network 계층 Protocol을 사용함
-- Router는 자신을 지나가는 모든 IP Datagram의 header를 보고 어디로 보내는지 확인함
+- 모든 호스트와 라우터는 네트워크 계층 프로토콜을 사용함
+- 라우터는 자신을 지나가는 모든 IP Datagram의 헤더를 보고 어디로 보내는지 확인함
 
 ## 네트워크 계층의 주요 기능
->1. Forwarding : Packet을 Router의 Input에서, 적절한 Router의 Output으로 옮기는 작업
+
+>1. Forwarding: 패킷을 라우터의 입력에서 적절한 라우터의 출력으로 옮기는 작업
 
 - 포워딩 테이블
-![](https://velog.velcdn.com/images/calzone0404/post/a58b6b31-c939-489c-981b-7b970b10ba1e/image.png)
-라우터는 도착하는 패킷 헤더의 필드값을 통해 포워딩 테이블의 내부 색인으로 사용하여 패킷을 전달한다.
-포워딩 테이블 엔트리에 저장되어 있는 헤더의 값은 해당 패킷이 전달되어야 할 라우터의 외부 링크 인터페이스를 나타낸다.
 
->2. Routing : Packet의 송신지에서 수신지까지 가는 길을 결정함 
-주로 Routing Algorithm에 의해 결정됨
+  ![Forwarding Table](https://velog.velcdn.com/images/calzone0404/post/a58b6b31-c939-489c-981b-7b970b10ba1e/image.png)
   
+  라우터는 도착하는 패킷 헤더의 필드값을 통해 포워딩 테이블의 내부 색인으로 사용하여 패킷을 전달한다. 포워딩 테이블 엔트리에 저장되어 있는 헤더의 값은 해당 패킷이 전달되어야 할 라우터의 외부 링크 인터페이스를 나타낸다.
 
-	Best effort : 
-    최대한 빠른 시간 이내에 Packet을 목적지 주소로 배달하기 위해 노력하지만, 
-    Packet이 실제 수신자에게 제대로 잘 전달되었는지에 대한 보증을 하지 않는다
+>2. Routing: 패킷의 송신지에서 수신지까지 가는 경로를 결정함. 주로 라우팅 알고리즘에 의해 결정됨
+
+- 라우팅 알고리즘은 패킷이 송신지에서 수신지로 가는 경로를 결정한다. 예를 들어, 호스트 H1에서 H2로 패킷이 흐르는 경로를 결정한다. 라우팅은 네트워크 계층의 제어 평면에서 구현된다.
+
+## 데이터 평면과 제어 평면
+
+- **데이터 평면**: 포워딩 작업을 수행하며, 패킷을 입력 링크에서 적절한 출력 링크로 이동시킨다. 포워딩은 일반적으로 하드웨어에서 매우 짧은 시간(몇 나노초) 내에 수행된다.
+- **제어 평면**: 네트워크 전반에 걸친 경로를 결정하며, 패킷이 송신지에서 수신지로 가는 전체 경로를 설정한다. 라우팅 알고리즘은 제어 평면에서 실행되며, 이는 일반적으로 소프트웨어에서 더 긴 시간(몇 초) 내에 수행된다.
+
+## 네트워크 서비스 모델
+
+네트워크 계층이 제공할 수 있는 서비스는 다음과 같다:
+
+- **보장된 전달**: 송신 호스트가 보낸 패킷이 결국 수신 호스트에 도착하도록 보장하는 서비스
+- **지연 시간 보장된 전달**: 패킷의 전달을 보장할 뿐만 아니라, 지정된 호스트 간 지연 시간 내에 전달을 보장하는 서비스 (예: 100밀리초 이내)
+- **순서 보장된 패킷 전달**: 패킷이 전송된 순서대로 수신 호스트에 도착하도록 보장하는 서비스
+- **최소 대역폭 보장**: 송신 호스트와 수신 호스트 간의 특정 비트 전송률(예: 1 Mbps)을 보장하는 서비스. 송신 호스트가 지정된 비트 전송률 이하로 비트를 전송하면 모든 패킷이 결국 수신 호스트에 전달됨
+- **보안**: 네트워크 계층에서 모든 데이터그램을 송신지에서 암호화하고 수신지에서 복호화하여 모든 전송 계층 세그먼트에 대해 기밀성을 제공하는 서비스
+
+인터넷의 네트워크 계층은 **최선형 서비스(Best Effort)**를 제공한다. 최선형 서비스는 패킷이 전송된 순서대로 수신되거나, 최종적으로 전달될 것이라는 보장을 하지 않는다. 엔드 투 엔드 지연에 대한 보장도 없고, 최소 대역폭에 대한 보장도 없다.
+
     
 # 4.2 Virtual Circuit과 Datagram Network
 
@@ -37,10 +55,9 @@
 
 2. 각 Packet은 각자의 Virtual Circuit을 가진다.
    - 따라서, 각 Packet은 각자의 VC Identifier를 통해 전달된다.
-   - Path 내에 존재하는 Packet에 대해,
-   **VC Identifier (VC Number)는 반드시 각 Packet에 대해 Unique하게 할당되어야 한다.**
+   - Path 내에 존재하는 Packet에 대해, **VC Identifier (VC Number)는 반드시 각 Packet에 대해 Unique하게 할당되어야 한다.**
    
-3. 송신지에서 수신지로 가는 길에 존재하는 모든 Rotuer는 자신으로 전달되는 각 연결에 대해 State를 유지함
+3. 송신지에서 수신지로 가는 길에 존재하는 모든 Router는 자신으로 전달되는 각 연결에 대해 State를 유지함
 
 4. Link, Router 자원이 VC에 의해 할당될 수 있음
 
@@ -53,9 +70,9 @@
 ![](https://velog.velcdn.com/images/calzone0404/post/4b7ec4a8-1336-44c8-8fd8-739bcd56f986/image.png)
 
 - 예를 들어
-$[1, 12, 3, 22]$
->- 1번 Interface에서 들어온 12번 VC Num을 가진 Packet은
->- 3번 Interface로 나가서, 22번 VC Num을 부여받는다.
+  $[1, 12, 3, 22]$
+  >- 1번 Interface에서 들어온 12번 VC Num을 가진 Packet은
+  >- 3번 Interface로 나가서, 22번 VC Num을 부여받는다.
 
 ### VC Signaling 프로토콜
 
@@ -69,8 +86,8 @@ $[1, 12, 3, 22]$
 - Packet을 독립적으로 전송한다.
    - 즉, 각 Packet은 각각 독립적인 Path(서로 다른 경로)를 갖는다.
    - 이렇게 전송하면, 목적지에서는 Packet의 순서가 달라질 수 있다.
-   ![](https://velog.velcdn.com/images/calzone0404/post/7634eda1-8056-4bec-aff8-a685254d3c54/image.png)
 
+   ![](https://velog.velcdn.com/images/calzone0404/post/7634eda1-8056-4bec-aff8-a685254d3c54/image.png)
 
 ### Datagram Forwarding Table
 
@@ -80,17 +97,15 @@ $[1, 12, 3, 22]$
 
 예를 들어, 위 사진을 보면
 
-
-	하위 16bit에 대해서
-    00010000 00000000 ~ 00010111 11111111 사이에 목적지 주소가 존재하면
-    Link 0으로 전달한다.
+- 하위 16bit에 대해서 00010000 00000000 ~ 00010111 11111111 사이에 목적지 주소가 존재하면 Link 0으로 전달한다.
 
 > Longest Prefix Matching (가장 긴 주소 접두사 Matching)
-
 - 목적지 주소를 DFT에서 찾을 때, 앞에서부터 주소와 일치하는 가장 긴 주소 접두사를 사용하는 방법
 
 예를 들어,
+
 ![](https://velog.velcdn.com/images/calzone0404/post/223f73ae-dff4-476a-b1a4-e0d48b6e0f82/image.png)
+
 ![](https://velog.velcdn.com/images/calzone0404/post/f58308ec-93dc-4b39-beba-ae5023f4fd8c/image.png)
 
 위 테이블에서 위 두 주소를 Matching한다면,
@@ -115,16 +130,18 @@ $[1, 12, 3, 22]$
 
 ### 1. Management plane: 네트워크 인프라를 관리하는 사용자/운영자/도구
 
-### 2. Control plane : 도달 가능성 상태를 교환하기 위한 네트워크 엔티티 간의 시그널신호 부여
-   - Datagram이 송신지에서 수신지까지 전달될 때, 어떤 방법으로 Router을 거쳐갈지 결정한다.
+### 2. Control plane : 도달 가능성 상태를 교환하기 위한 네트워크 엔티티 간의 시그널 신호 부여
+   - Datagram이 송신지에서 수신지까지 전달될 때, 어떤 방법으로 Router를 거쳐갈지 결정한다.
+
 #### Per-router control plane
-- 라우팅 알고리즘이 각각의 모든 라우터에서 실행되며, 라우터는 포워팅 기능과 라우팅 기능을 모두 갖고 서로 상호작용한다.
+- 라우팅 알고리즘이 각각의 모든 라우터에서 실행되며, 라우터는 포워딩 기능과 라우팅 기능을 모두 갖고 서로 상호작용한다.
+
    ![](https://velog.velcdn.com/images/calzone0404/post/b40ce25e-804e-4b6c-8337-6a37ba477fda/image.png)
 
 #### Logically centralized control plane
 - 각각의 Router가 Local Control Agents(CAs)를 통해 상호작용한다
-   ![](https://velog.velcdn.com/images/calzone0404/post/4767900a-a5d0-412e-a07d-88c139b5ca35/image.png)
 
+   ![](https://velog.velcdn.com/images/calzone0404/post/4767900a-a5d0-412e-a07d-88c139b5ca35/image.png)
 
 ### 3. Data plane : 애플리케이션 데이터 패킷의 실제 이동
    - Input Link에서 Output Link로 Datagram을 전달한다.
@@ -132,90 +149,98 @@ $[1, 12, 3, 22]$
 # 4.3 라우터 내부 구조
 
 ## 1. Input Port
+
 ![](https://velog.velcdn.com/images/calzone0404/post/75a7bc10-cbf7-4114-8d50-4e6b354d574a/image.png)
 
 - 입력 포트의 맨 왼쪽은, bit데이터가 들어오는 물리 계층 기능을 수행한다.
-- **입력 포트의 가장 오른쪽** 박스는 Forwarding Table을 참조하여, 도착한 Packet이 **Switcing 과정**을 통해 라우터 Output Port를 결정하게 된다.
+- **입력 포트의 가장 오른쪽** 박스는 Forwarding Table을 참조하여, 도착한 Packet이 **Switching 과정**을 통해 라우터 Output Port를 결정하게 된다.
 
-### Switcing 종류
-- input buffer로부터 들어온 packet을 적절한 output buffer로 전달해야 한다.
-- switching rate : Input에서 Output으로 전달할 수 있는 비율
+### Switching 종류
+- Input buffer로부터 들어온 Packet을 적절한 Output buffer로 전달해야 한다.
+- Switching rate: Input에서 Output으로 전달할 수 있는 비율
 
 #### 1. Memory를 통한 Switching
 패킷 전달 과정
-> 1. Packet이 도착하면, Input은 CPU에 신호를 보내서, Packet을 Memory에 복사한다.
+1. Packet이 도착하면, Input은 CPU에 신호를 보내서, Packet을 Memory에 복사한다.
 2. CPU는 헤더에서 목적지 주소를 추출한다.
 3. Forwarding Table에서 적절한 Output port를 찾는다.
 4. Packet을 Output port에 복사한다.
+
 ![](https://velog.velcdn.com/images/calzone0404/post/425440bf-d879-4ded-aed5-3c8f201c4f47/image.png)
 
 #### 2. Bus를 통한 Switching
 
 - Input port로부터 전달된 Datagram은 CPU 개입 없이 공유 Bus를 통해 직접 Output port로 전달된다.
 
-> Bus contention : Switching 속도는 Bus의 대역폭에 의해 제한된다.
+> Bus contention: Switching 속도는 Bus의 대역폭에 의해 제한된다.
 
 ![](https://velog.velcdn.com/images/calzone0404/post/b4e9d683-0d11-43d0-a593-56b8f441fa0f/image.png)
-
 
 #### 3. Interconnection Network를 통한 Switching
 
 - Bus contention을 극복하기 위한 해결책
 - 각 수직 Bus는 교차점에서 각 수평 Bus와 교차하며, Switch controller에 의해 언제든지 교차점을 On/Off할 수 있다.
-- 여러 패킷을 동시에 전달 할 수 있게 된다.
-- 그러나, 두개의 서로 다른 Input port에서 나오는 패킷이 동일한 Output port로 전달되는 경우, 한번에 하나의 Packet만 특정 Bus에서 전송될 수 있으므로 대기해야 한다.
+- 여러 패킷을 동시에 전달할 수 있게 된다.
+- 그러나, 두 개의 서로 다른 Input port에서 나오는 패킷이 동일한 Output port로 전달되는 경우, 한 번에 하나의 Packet만 특정 Bus에서 전송될 수 있으므로 대기해야 한다.
+
 ![](https://velog.velcdn.com/images/calzone0404/post/d71f0132-df60-4778-a7b1-e2b18df071db/image.png)
 
 ### Input port Queuing
 - 모든 패킷을 전송하기에는 Switching 구조가 충분한 속도를 가지지 못한다면, 대기가 발생하게 된다.
 
 예를 들어,
+
 ![](https://velog.velcdn.com/images/calzone0404/post/aafaf769-b380-40ce-ad20-c33ba070f1bf/image.png)
 
 > 왼쪽 상단 큐의 앞쪽에서 먼저 패킷을 전송한다고 가정
 
-왼쪽 하단 큐의 가장 앞쪽의 패킷은 출력 포트가 같으므로 대기해야 함.
-그런데 그 뒤 두번째 패킷은 출력포트가 다르지만, 앞 패킷이 전달되지 않고 있으므로 대기해야 함.
+왼쪽 하단 큐의 가장 앞쪽의 패킷은 출력 포트가 같으므로 대기해야 함. 그런데 그 뒤 두 번째 패킷은 출력 포트가 다르지만, 앞 패킷이 전달되지 않고 있으므로 대기해야 함.
 
 이러한 현상을 **HOL (Head-of-the-Line blocking)** 이라고 한다.
 
 ## 2. Output Port
+
 ![](https://velog.velcdn.com/images/calzone0404/post/1c0ec69c-748b-40eb-b5d7-0fa5b58daed6/image.png)
 
 출력 포트는 Buffer에 저장된 패킷을 가져와서 Link로 전송하는 역할을 수행한다.
 
 만약, Link로 전송하는 전송률보다 Input으로부터 전달되는 데이터 전송률이 더 크다면, Buffering이 발생한다.
 
->따라서, Queue에 들어있는 Datagram들을 어떤 순서로 전송해야 할 지 결정하는 규칙이 필요하게 된다.
+> 따라서, Queue에 들어있는 Datagram들을 어떤 순서로 전송해야 할지 결정하는 규칙이 필요하게 된다.
 
 ### Output port Queuing
 
-- Scheduling : Link로 전달할 다음 순서의 Packet을 결정하는 것
+- Scheduling: Link로 전달할 다음 순서의 Packet을 결정하는 것
 
 #### FIFO Scheduling
-> 가장 먼저 Queue에 들어온 Packet부터 Output Link로 전달한다
+
+> 가장 먼저 Queue에 들어온 Packet부터 Output Link로 전달한다.
+
 ![](https://velog.velcdn.com/images/calzone0404/post/fc8819b4-ec91-4a10-afd4-926c4e66246a/image.png)
 
 #### Discard 정책
->만약 꽉 차있는 Queue에 Packet이 들어온다면, 어떤 Packet을 버려야 할까?
+> 만약 꽉 차 있는 Queue에 Packet이 들어온다면, 어떤 Packet을 버려야 할까?
 
-1. Tail drop : 도착하는 패킷을 버린다.
-2. Random drop : 아무거나 버린다.
-3. Priority : 우선순위를 기준으로 버린다.
+1. Tail drop: 도착하는 패킷을 버린다.
+2. Random drop: 아무거나 버린다.
+3. Priority: 우선순위를 기준으로 버린다.
 
 #### Priority Scheduling
 - 높은 우선순위를 가진 Packet부터 전달한다.
 - 우선순위 Class가 높은 Packet을 전달한다.
+
 ![](https://velog.velcdn.com/images/calzone0404/post/181d595c-4e36-46fa-b4f3-d55550ff0789/image.png)
 
 #### Round Robin Scheduling
-- 여러개의 Class가 존재하며, 각 Class를 번갈아가며 Output Link로 전달한다.
+- 여러 개의 Class가 존재하며, 각 Class를 번갈아가며 Output Link로 전달한다.
+
 ![](https://velog.velcdn.com/images/calzone0404/post/3f6063d2-37b1-4a08-810e-cae2ed814376/image.png)
 ![](https://velog.velcdn.com/images/calzone0404/post/3e58305b-10eb-49ba-aa4a-ac7130be0a4b/image.png)
 
 #### Weighted Fair Queuing (WFQ)
 - Round Robin 방식의 일반적 형태이다.
 - 각 Class는 각 Cycle마다 Service의 개수에 따른 가중치가 존재한다.
+
 ![](https://velog.velcdn.com/images/calzone0404/post/c20b48ef-7731-45e0-9046-d4302aaa68e8/image.png)
 
 # 4.4 Internet Protocol : IP
