@@ -53,7 +53,7 @@
 ![](https://velog.velcdn.com/images/calzone0404/post/4b7ec4a8-1336-44c8-8fd8-739bcd56f986/image.png)
 
 - 예를 들어
-$$[1, 12, 3, 22]$$
+$[1, 12, 3, 22]$
 >- 1번 Interface에서 들어온 12번 VC Num을 가진 Packet은
 >- 3번 Interface로 나가서, 22번 VC Num을 부여받는다.
 
@@ -319,7 +319,7 @@ Host : 각 Subnet 내에서 Host를 구분하기 위해 사용
 ### CIDR
 > CIDR : Class InterDomain Routing
 
-- a.b.c.d/x에서 x는 subnet address의 상위 $$x$$bit를 의미한다.
+- a.b.c.d/x에서 x는 subnet address의 상위 $x$bit를 의미한다.
 
 아래 이미지를 예시로 보면, 상위 23bit가 subnet part이다.
 ![](https://velog.velcdn.com/images/calzone0404/post/c93148c9-01bc-41ca-b79e-10c01049ffee/image.png)
@@ -533,14 +533,14 @@ p(v) : 출발지에서 v까지의 현재 최소 비용 경로에서 v의 직전 
 
 N’ : 노드의 집합
 
-$$(D(v), p(w))$$ = $$(weight, 직전 이어진 노드)$$
+$(D(v), p(w))$ = $(weight, 직전 이어진 노드)$
 
 
 ![](https://velog.velcdn.com/images/calzone0404/post/dc832ff3-3db4-447f-bb26-f666769c450d/image.png)
 
 ![](https://velog.velcdn.com/images/calzone0404/post/b4f17436-9444-49ee-ae4e-93c5e0b43a15/image.png)
 
->시간복잡도 : $$O(n^2)$$
+>시간복잡도 : $O(n^2)$
 
 ## Distance Vector Routing Algorithm
 
@@ -548,11 +548,11 @@ $$(D(v), p(w))$$ = $$(weight, 직전 이어진 노드)$$
 노드 x부터 y까지 최소 비용 경로의 비용은 다음과 같이 나타낼 수 있다.
 ![](https://velog.velcdn.com/images/calzone0404/post/668b0b33-010e-48ba-854f-34dfce412c51/image.png)
 
-$$min_v$$ : x에서 y까지 가는데 드는 최소 비용
-$$c(x, v)$$ : x에서 v로 가는데 드는 최소 비용
-$$d_v(y)$$ : v에서 y까지 가는데 드는 최소 비용
+$min_v$ : x에서 y까지 가는데 드는 최소 비용
+$c(x, v)$ : x에서 v로 가는데 드는 최소 비용
+$d_v(y)$ : v에서 y까지 가는데 드는 최소 비용
 
-쉽게 생각해서, 노드의 개수가 $$n$$개일 때, 시작점에서 1번만 진행하는 경우, 2번만 진행하는 경우, $$(n - 1)$$번만 진행하는 경우에 대해서 계속 가중치를 갱신해주면 된다.
+쉽게 생각해서, 노드의 개수가 $n$개일 때, 시작점에서 1번만 진행하는 경우, 2번만 진행하는 경우, $(n - 1)$번만 진행하는 경우에 대해서 계속 가중치를 갱신해주면 된다.
 
 ![](https://velog.velcdn.com/images/calzone0404/post/9a0a8840-3a4b-4cfc-887b-bbcedb10be37/image.png)
 ![](https://velog.velcdn.com/images/calzone0404/post/3f185399-6a2c-4555-b789-89984686e124/image.png)
@@ -650,7 +650,7 @@ z가 계속해서 y를 통해 x로 가는 경로를 사용하는 동안은 y는 
    - 각 노드는 네트워크 내 각 링크의 비용을 모두 알아야 하므로 이를 알아내는데 드는 시간
    >n : 노드의 개수
    E : 간선의 개수
-   시간복잡도 : $$O(nE)$$
+   시간복잡도 : $O(nE)$
    
 - DV
    - 시간 복잡도는 많은 요소에 따라 달라지므로 확정할 수 없음
@@ -785,12 +785,12 @@ Backbone 영역의 주요 역할은 **AS 내 서로 다른 영역 간의 트래�
 ![](https://velog.velcdn.com/images/calzone0404/post/907705ff-3d75-4593-a7c3-d8945d75365b/image.png)
 위 예시에서, subnet x에 대한 도달 가능성 정보를 AS1, AS2에 알리는 작업을 생각해보자.
 
-AS3 Gateway Router $$3a$$는 AS3에서 X로 가능 경로에 대한 정보를 AS2의 Gateway Router $$2c$$에 광고한다. >> **eBGP**
+AS3 Gateway Router $3a$는 AS3에서 X로 가능 경로에 대한 정보를 AS2의 Gateway Router $2c$에 광고한다. >> **eBGP**
 - 즉, AS3는 AS2에게 자신한테 x로 가는 데이터를 Forwarding한다면, 전달이 가능하다고 알린다.
 
-$$2c$$는 전달받은 광고를 자신 AS의 모든 라우터에게 정보를 전달한다 >> **iBGP**
+$2c$는 전달받은 광고를 자신 AS의 모든 라우터에게 정보를 전달한다 >> **iBGP**
 
-이후, AS2의 $$2a$$는 위 동작과정과 마찬가지로 AS1의 Gateway router $$1c$$로 전달하게 된다. **이때 전달되는 정보는 {(AS2, AS3), X}가 전달된다.**
+이후, AS2의 $2a$는 위 동작과정과 마찬가지로 AS1의 Gateway router $1c$로 전달하게 된다. **이때 전달되는 정보는 {(AS2, AS3), X}가 전달된다.**
 
 
 ### BGP 경로 선택
