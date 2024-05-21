@@ -1,13 +1,13 @@
-### 6.1 데이터 링크 계층 소개
+# 6.1 데이터 링크 계층 소개
 
-#### Terminology
+### Terminology
 1. **Host**와 **Router**는 `NODE`라고 부른다
 2. `link`란, 통신 경로를 따라 인접 노드를 연결하는 통신 채널을 의미함. 예를 들어, Wired Link, Wireless Link, LANs
 3. 2계층의 데이터 단위는 `frame`이라고 부른다. 이 frame들을 캡슐화 한 것이 `datagram`이다.
 
 >즉, 데이터 링크 계층은 Link를 통해 물리적으로 인접한 Node로 datagram을 전송하는 역할을 담당한다.**
 
-#### Context
+### Context
 
 - Datagram은 서로 다른 Link Protocol들을 통해 서로 다른 Link로 전송된다.
 - 각 Link Protocol은 서로 다른 서비스를 제공한다.
@@ -20,7 +20,7 @@
 
   이때 여행객은 **Datagram**, 거쳐가는 경로는 **Communication Link**, 이동 수단은 **Link Layer Protocol**, 여행사는 **Routing algorithm**
 
-#### 데이터 링크 계층의 Service
+### 데이터 링크 계층의 Service
 
 1. **Framing, Link Access**: **Datagram**을 header와 trailer를 추가하여 frame으로 캡슐화 한다.
    - Header: 목적지, 출발지 주소, 데이터 내용을 정의
@@ -42,19 +42,19 @@
   
    ![Duplex](https://velog.velcdn.com/images/calzone0404/post/7092ccc0-3b60-4f7d-a4d1-bd0dd3ca6717/image.png)
 
-#### 데이터 링크 계층이 구현된 위치
+### 데이터 링크 계층이 구현된 위치
 - 데이터 링크 계층은 모든 호스트에 구현되어 있다.
 - 데이터 링크 계층은 **NIC**라고 불리는 어댑터에 구현되어 있다. 
   > 우리 컴퓨터에 꽂혀있는 랜카드라고 생각하면 된다.
 - 호스트의 CPU, Main Memory와 함께 사용되며, Hardware, Software, Firmware의 결합체이다.
 
-##### Adaptor끼리 통신하는 방법
+#### Adaptor끼리 통신하는 방법
 
-###### 1. 송신측
+##### 1. 송신측
 - 송신측에서는 Datagram을 Frame으로 캡슐화 한다.
 - 캡슐화할 때, Error checking bits, Rdt, Flow Control 정보도 함께 추가된다.
 
-###### 2. 수신측
+##### 2. 수신측
 - 수신측에서는 에러가 발생했는지 Error checking bits, Rdt, Flow Control을 통해 확인한다.
 - 에러가 발생하지 않았다면 상위 계층인 네트워크 계층으로 Frame의 캡슐을 풀어서 Datagram을 전달해준다.
 
