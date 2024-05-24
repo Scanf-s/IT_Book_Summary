@@ -385,9 +385,157 @@ letters = ''.join(temp)
 ```
 이 방법을 사용해서 선형 시간 복잡도 O(n)를 보장할 수 있다.
 
-# 5.5 Using Array-Based Sequences
-## 5.5.1 Storing High Scores for a Game
-## 5.5.2 Sorting a Sequence
-## 5.5.3 Simple Cryptography
+---
+
+# 5.5 UsingArray-BasedSequences
+
+## 5.5.1  StoringHighScoresforaGame
+
+이 코드는 비디오 게임의 최고 점수들을 저장하는 방법에 대한 예제이며, 게임뿐만이 아니라 병원의 환자 기록이나 축구 팀의 선수 이름을 저장하는 것과 같은 부분에서 많이 활용되고 있다. 
+
+![image](https://github.com/Scanf-s/CS_Book_Summary/assets/105439069/f5be0f83-507d-4984-9774-5eee3d34c362)
+
+### GameEntry Class
+```python
+class GameEntry:
+    """
+    플레이어 이름, 점수를 저장하는 객체
+    """    
+    def __init__(self, name, score):
+        self.name = name
+        self.score = score
+    
+    def get_name(self):
+        return self.name
+    
+    def get_score(self):
+        return self.score
+
+    # print(GameEntry인스턴스)로 아래 형식을 통해 출력된다. (Java의 toString)
+    def __str__(self):
+        return '({0}, {1})'.format(self.name, self.score)
+```
+
+### Scoreboard Class
+
+Scoreboard 클래스는 일정 수의 최고 점수를 저장하는 객체이다. 
+새로운 점수가 추가될 때마다 가장 낮은 점수보다(배열의 맨 뒤에 있는 요소보다) 높으면 보드에 추가되는 형태이다.
+
+```python
+class Scoreboard:
+    """
+    스코어보드 객체
+    """
+
+    # 만약 초기화할때, Scoreboard()로만 초기화했다면,
+    # 10개의 요소를 가리키는 포인터로 이루어진 _board가 생성됨
+    def __init__(self, capacity=10):
+        self._board = [None] * capacity  # reserve space for future scores
+        self._n = 0                      # number of actual entries
+
+    # Scoreboard인스턴스[k]를 통해 가져올 수 있음
+    def __getitem__(self, k):
+        """Return entry at index k."""
+        return self._board[k]
+    
+    def add(self, entry):
+        # GameEntry인스턴스에서 점수를 가져옴
+        score = entry.get_score()
+        
+        # 보드의 용량을 초과하지 않거나 // 보드의 맨 뒤에 있는 점수보다 지금 입력된 점수가 더 높다면 TRUE
+        good = self._n < len(self._board) or score > self._board[-1].get_score()
+        
+        if good:
+            # 아직 보드가 다 안채워졌다면 그냥 넣는다.
+            if self._n < len(self._board):  # no score drops from list
+                self._n += 1                # so overall number increases
+
+            # 보드가 이미 꽉 차있다면, 맨 뒤 요소 부터 비교해서 올바른 자리에 넣는 동작
+            j = self._n - 1
+            while j > 0 and self._board[j-1].get_score() < score:
+                self._board[j] = self._board[j-1]
+                j -= 1
+            self._board[j] = entry
+```
+
+### 새롭게 들어온 entry를 삽입하는 방법
+
+위 코드의 맨 하단부분에 대해 설명을 해보자면,
+
+![image](https://github.com/Scanf-s/CS_Book_Summary/assets/105439069/31d776ee-2e3f-46e0-b795-fbcb2e3a0fdd)
+
+`Jill/740`이 새롭게 들어왔을 때, `Jack/510`부터 `Mike/1105`까지 비교하면서 적절한 자리를 찾아가는 방식이다.
+740점보다 작은 엔트리들은 배열의 오른쪽으로 쭉 밀리고, 밀리고 남은 한자리에 entry가 들어가게 된다.
+
+## 5.5.2 시퀀스 정렬
+이 절에서는 배열 기반 시퀀스를 사용하여 시퀀스를 정렬하는 방법을 설명합니다. 일반적으로 삽입 정렬 알고리즘을 예로 들 수 있습니다.
+
+### 삽입 정렬 알고리즘
+
+![image](https://github.com/Scanf-s/CS_Book_Summary/assets/105439069/5cb78a62-7117-4c0e-bedb-977b9329d9b4)
+
+삽입 정렬은 배열의 각 요소를 순차적으로 선택하고 해당 요소를 적절한 위치에 `삽입`하여 배열을 정렬하는 알고리즘이다.
+인덱스 `j=1`인 요소부터 시작하며, `arr[j-1]`과 `arr[j]`를 비교하게 되는데, 
+만약 오름차순의 경우 `arr[j-1]`이 더 크다면, `arr[j]`와 교환하는 방식으로 진행되며,
+총 array의 크기(`k`)만큼 반복해야 한다. 따라서 시간복잡도는 $O(n^2)$이다.
+
+```python
+def insertion_sort(A):
+    """Sort list of comparable elements into nondecreasing order."""
+    for k in range(1, len(A)):       # from 1 to n-1
+        cur = A[k]                   # current element to be inserted
+        j = k                        # find correct index j for cur
+        while j > 0 and A[j-1] > cur: # element A[j-1] must be after cur
+            A[j] = A[j-1]
+            j -= 1
+        A[j] = cur                   # cur is now in the right place
+```
+
+## 5.5.3 간단한 암호화
+문자열과 리스트를 사용한 간단한 암호화 기법인 Caesar cipher 알고리즘이다.
+Caesar cipher는 각 문자를 알파벳에서 일정 수만큼 뒤에 있는 문자로 대체한다.
+
+![image](https://github.com/Scanf-s/CS_Book_Summary/assets/105439069/bcb2c6db-1fcc-4017-822e-5b670eebf061)
+
+### Caesar 암호화
+```python
+class CaesarCipher:
+    """Class for doing encryption and decryption using a Caesar cipher."""
+    
+    def __init__(self, shift):
+        """Construct Caesar cipher using given integer shift for rotation."""
+        # shift만큼 forward하여 암호화했다면 복호화할때는 shift만큼 backward를 하면 된다.
+        self._forward = ''.join([chr((k + shift) % 26 + ord('A')) for k in range(26)])
+        self._backward = ''.join([chr((k - shift) % 26 + ord('A')) for k in range(26)])
+    
+    def encrypt(self, message):
+        """Return string representing encrypted message."""
+        return self._transform(message, self._forward)
+    
+    def decrypt(self, secret):
+        """Return decrypted message given encrypted secret."""
+        return self._transform(secret, self._backward)
+    
+    def _transform(self, original, code):
+        """Utility to perform transformation based on given code string."""
+        # 원문을 list에 담아서
+        msg = list(original)
+        # 문자 하나하나마다 변환을 시작한다.
+        for k in range(len(msg)):
+            if msg[k].isupper(): # code(forward or backward)를 통해 암호화 또는 복호화
+                j = ord(msg[k]) - ord('A')
+                msg[ch] = code[j] # 암호화된 문자로 대체
+        return ''.join(msg)
+```
+
+### Example usage
+```python
+cipher = CaesarCipher(3) # 3회 shift
+message = "THE EAGLE IS IN PLAY; MEET AT JOE'S."
+coded = cipher.encrypt(message)
+print('Secret:', coded)
+decoded = cipher.decrypt(coded)
+print('Message:', decoded)
+```
 
 # 5.6 Multidimensional Data Sets
