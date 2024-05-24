@@ -104,7 +104,7 @@ primes.extend(extras)
 
 파이썬은 기본 데이터 유형의 배열을 위해 array 모듈을 제공하고 있으며, 이 모듈은 콤팩트한 저장을 위한 array 클래스를 지원하고있다.
 
-이 클래스의 공개 인터페이스는 대부분 파이썬 리스트와 유사합니다. 그러나 array 클래스의 생성자는 첫 번째 매개변수로 데이터 유형을 지정하는 타입 코드가 필요하다. 
+이 클래스의 공개 인터페이스는 대부분 파이썬 리스트와 유사하지만, array 클래스의 생성자는 첫 번째 매개변수로 데이터 유형을 지정하는 타입 코드가 필요하다. 
 
 ```python
 prime = array('i', [2, 3, 5, 7, 11, 13, 17, 19])
@@ -363,7 +363,7 @@ def compute_average(n):
 리스트와 튜플처럼 많은 연산을 지원하지만, 불변성특징 때문에 여러가지 제약이 존재한다.
 
 - `capitalize`, `center`, `strip`과 우리가 주로 사용하는 문자열 연산 함수는 새 문자열을 생성해야 하기 때문에, 선형 시간 복잡도 O(n)가 소요된다.
-- 불리언 메서드(`islower` 등)와 비교 연산자(`==`, `<`)도 일반적으로 O(n) 시간에 실행되지만, 일찍 결정될 수 있다면 더 빠르게 종료할 수 있습니다.
+- 불리언 메서드(`islower` 등)와 비교 연산자(`==`, `<`)도 일반적으로 O(n) 시간에 실행되지만, 일찍 결정될 수 있다면 더 빠르게 종료할 수 있다.
 
 #### 패턴 매칭
 
@@ -374,8 +374,6 @@ def compute_average(n):
 #### 문자열 구성
 
 단순히 반복문을 통해 (`letters += c`)을 사용하는 것은 매우 비효율적이며 O(n^2) 시간 복잡도를 가지게 된다. 하지만, 리스트 컴프리헨션 또는 `join`을 사용하여 효율적으로 구성할 수 있다.
-
-다음은 문자열을 효율적으로 구성하는 방법입니다:
 ```python
 temp = []
 for character in document:
@@ -468,7 +466,6 @@ class Scoreboard:
 740점보다 작은 엔트리들은 배열의 오른쪽으로 쭉 밀리고, 밀리고 남은 한자리에 entry가 들어가게 된다.
 
 ## 5.5.2 시퀀스 정렬
-이 절에서는 배열 기반 시퀀스를 사용하여 시퀀스를 정렬하는 방법을 설명합니다. 일반적으로 삽입 정렬 알고리즘을 예로 들 수 있습니다.
 
 ### 삽입 정렬 알고리즘
 
@@ -539,3 +536,175 @@ print('Message:', decoded)
 ```
 
 # 5.6 Multidimensional Data Sets
+
+Python에서 리스트, 튜플, 문자열은 모두 1차원 배열(시퀸스)을 이용한다. 
+이러한 시퀀스의 각 요소에 접근하려면 단일 인덱스를 통해서 접근이 가능하다. 
+하지만, 2차원 이상의 리스트의 경우에는 단일 엔덱스만으로는 개별 요소에 접근하기 힘들다.
+
+### 2차원 배열의 예
+
+2차원 배열은 `행렬(matrix)`이라고 불린다. 
+행렬의 cell을 참조하려면 일반적으로 두 개의 인덱스(i, j)를 사용해야한다. 
+
+> 첫 번째 인덱스는 **행 번호**를, 두 번째 인덱스는 **열 번호**를 나타낸다. 
+
+![image](https://github.com/Scanf-s/CS_Book_Summary/assets/105439069/d5fd3b0e-3912-4ba6-ac04-506f3d322e8b)
+
+이 데이터 세트가 `stores`라는 이름이라면, `stores[3][5]`의 값은 100이고, `stores[6][2]`의 값은 632라고 읽으면 된다.
+
+### 다차원 리스트 초기화 방법
+
+1차원 리스트를 빠르게 초기화하려면 `data = [0] * n`과 같은 구문을 사용할 수 있다. 
+하지만 2차원 리스트를 만들 때는 생각을 좀 해봐야한다.
+
+예를 들어, `r` 행과 `c` 열을 가진 2차원 리스트를 만들고 모든 값을 0으로 초기화하려고 할 때 아래처럼 하면 오류가 발생한다.
+
+```python
+data = ([0] * c) * r
+```
+이 명령은 길이가 `r * c`인 단일 리스트를 생성하는 코드이다.
+
+따라서, 각 열이 별도의 리스트가 되도록 하려면 아래와 같이 작성해야 한다.
+```python
+data = [[0] * c for _ in range(r)]
+```
+이 방법은 리스트 comprehension을 사용해서 각 행이 별도의 리스트로 생성되도록 한다.
+이렇게 하면 각 loop마다 `[0] * c`만큼의 1차원배열이 `r`개 생성되는 2차원 배열로 생성된다.
+
+### 예시 : 틱택토 (Tic-Tac-Toe)
+```python
+class TicTacToe:
+    """틱택토 게임을 관리하는 클래스 (전략은 포함되지 않음)."""
+    
+    def __init__(self):
+        """새 게임 시작."""
+        self.board = [['']*3 for _ in range(3)]
+        self.player = 'X'
+    
+    def mark(self, i, j):
+        """(i,j) 위치에 현재 플레이어의 표시를 놓음."""
+        if not (0 <= i <= 2 and 0 <= j <= 2):
+            raise ValueError("유효하지 않은 보드 위치")
+        if self.board[i][j] != '':
+            raise ValueError("보드 위치가 이미 점유됨")
+        if self.winner() is not None:
+            raise ValueError("게임이 이미 완료됨")
+        self.board[i][j] = self.player
+        self.player = 'O' if self.player == 'X' else 'X'
+    
+    def is_win(self, mark):
+        """주어진 플레이어의 승리 여부를 확인."""
+        board = self.board
+        return (mark == board[0][0] == board[0][1] == board[0][2] or
+                mark == board[1][0] == board[1][1] == board[1][2] or
+                mark == board[2][0] == board[2][1] == board[2][2] or
+                mark == board[0][0] == board[1][0] == board[2][0] or
+                mark == board[0][1] == board[1][1] == board[2][1] or
+                mark == board[0][2] == board[1][2] == board[2][2] or
+                mark == board[0][0] == board[1][1] == board[2][2] or
+                mark == board[0][2] == board[1][1] == board[2][0])
+    
+    def winner(self):
+        """승리한 플레이어의 표시를 반환, 무승부는 None을 반환."""
+        for mark in 'XO':
+            if self.is_win(mark):
+                return mark
+        return None
+    
+    def __str__(self):
+        """현재 게임 보드의 문자열 표현을 반환."""
+        rows = ['|'.join(self.board[r]) for r in range(3)]
+        return '\n-----\n'.join(rows)
+
+# 클래스 테스트
+game = TicTacToe()
+game.mark(0, 0)
+game.mark(1, 1)
+game.mark(0, 1)
+game.mark(2, 2)
+print(game)
+```
+
+### 추가) C에서의 2차원 배열 및 메모리에 대해서
+
+C에서 `int`형 4x4 2차원 배열을 선언하는 경우에 대해 생각해보자.
+`int`형 데이터 타입은 일반적으로 4바이트를 사용하므로, 4x4 배열은 총 16개의 `int` cell이 존재한다.
+
+#### 메모리 크기 계산
+
+1. **각 `int`형 요소의 크기**: 4bytes
+2. **전체 요소의 수**: 4 * 4 = 16개
+> **$Total memory size = 16 * 4bytes = 64bytes$**
+
+#### 예제 코드
+
+```c
+#include <stdio.h>
+
+int main() {
+    int array[4][4];  // 4x4 int형 2차원 배열 선언
+    
+    // 배열 초기화 및 출력
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            array[i][j] = i * 4 + j;  // 간단히 값을 할당
+            printf("%d ", array[i][j]);
+        }
+        printf("\n");
+    }
+    
+    return 0;
+}
+```
+이렇게 생성했을 때, 각각의 cell들은 4바이트를 사용하므로, 총 64바이트의 메모리가 할당된다.
+
+#### 동적 메모리 할당
+
+만약 동적으로 4x4 배열을 할당하려면 아래와 같이 작성해야 한다.
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int rows = 4;
+    int cols = 4;
+
+    // 행 포인터를 위한 메모리 할당
+    int **array = (int **)malloc(rows * sizeof(int *));
+    
+    // 각 행에 대한 메모리 할당
+    for (int i = 0; i < rows; i++) {
+        array[i] = (int *)malloc(cols * sizeof(int));
+    }
+
+    // 배열 초기화 및 출력
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            array[i][j] = i * cols + j;  // 간단히 값을 할당
+            printf("%d ", array[i][j]);
+        }
+        printf("\n");
+    }
+
+    // 메모리 해제
+    for (int i = 0; i < rows; i++) {
+        free(array[i]);
+    }
+    free(array);
+
+    return 0;
+}
+```
+
+이 코드는 동적으로 4x4 배열을 할당하고, 초기화 후 출력한 다음, 할당된 메모리를 해제한다. 
+동적 할당을 사용할 때는 각 행에 대해 **메모리를 개별적으로 할당**하므로 총 64바이트의 메모리가 필요하다.
+
+- 각 행 포인터의 메모리: $4 *$ sizeof(int *) bytes
+- 각 행의 메모리: $4 * (4 *$ sizeof(int) $)$ bytes
+
+이 경우, 포인터 배열 자체는 4개의 포인터를 포함하며, 각 **포인터는 일반적으로 8바이트**를 사용한다 (**64비트 시스템의 경우**).
+따라서
+- 포인터 배열의 총 크기는 $4 * 8 = 32$bytes이며, 
+- 각 행은 16개의 `int` 요소를 포함하여 총 $64$bytes를 필요로 한다.
+- **따라서 동적 할당의 총 메모리 사용량은 $32 + 64 = 96$bytes**
