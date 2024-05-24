@@ -298,9 +298,92 @@ def compute_average(n):
 
 <hr>
 
-# 5.4 Efficiency of Python's Sequence Types
-## 5.4.1 Python's List and Tuple Class
-## 5.4.2 Python's String Class
+# 5.4 Efficiency of Python’s Sequence Types
+
+## 5.4.1 Python’s List and Tuple Classes
+
+### 비변형 동작
+
+> 리스트와 튜플 모두 비변형(nonmutating) 연산을 지원하며, 이 연산들은 배열(sequence)를 수정하지 않는다.
+
+| 연산                | 실행 시간     |
+|--------------------|--------------|
+| `len(data)`        | O(1)         |
+| `data[j]`          | O(1)         |
+| `data.count(value)`| O(n)         |
+| `data.index(value)`| O(k + 1)     |
+| `value in data`    | O(k + 1)     |
+| `data1 == data2`   | O(k + 1)     |
+| `data[j:k]`        | O(k − j + 1) |
+| `data1 + data2`    | O(n1 + n2)   |
+| `c * data`         | O(cn)        |
+
+여기서 `n`은 시퀀스의 길이, `k`는 시퀀스 내의 위치, `n1`, `n2`는 두 시퀀스의 길이라고 하자.
+
+### 상수 시간 연산
+
+- `len(data)`: 이 연산은 시퀀스의 요소 수를 반환하는 함수이다.
+- `data[j]`: 인덱스를 사용해서 요소에 접근하는 방법이다.
+
+### 값의 발생 위치 검색
+
+`count`, `index`, `in`과 같은 연산은 **왼쪽에서 오른쪽으로 시퀀스를 순회**하는 방식으로 동작한다.
+- `count`: 항상 시퀸스의 전체를 순회하므로 O(n) 시간이 소요된다.
+- `index`, `in`: 이 둘의 경우에는, 값이 발견되면 일찍 종료할 수 있어 최악의 경우 O(n) 시간이 걸리지만, 더 빠르게 끝날수도 있다.
+
+#### 사전식 비교
+
+두 시퀀스를 비교(`data1 == data2`, `data1 > data2`와 같은 연산)하는 것은 각 시퀀스의 요소를 처음부터 짝지어서 비교한다. 만약 일치하지 않는 요소가 일찍 발견되면 최적화될 수 있지만, 최악의 경우 O(k + 1) 시간이 소요된다.
+
+#### 새 인스턴스 생성
+
+슬라이싱(`data[j:k]`), 연결(`data1 + data2`), 반복(`c * data`)과 같은 연산은 새 시퀀스를 생성하기 때문에, 새로 생성된 시퀀스의 크기에 비례해서 선형 시간이 걸린다.
+
+#### 리스트 수정 동작
+
+
+| 연산                  | 실행 시간        |
+|----------------------|-----------------|
+| `data[j] = val`      | O(1)            |
+| `data.append(value)` | O(1)*           |
+| `data.insert(k, value)` | O(n − k + 1)* |
+| `data.pop()`         | O(1)*           |
+| `data.pop(k)`        | O(n − k)*       |
+| `del data[k]`        | O(n − k)        |
+| `data.remove(value)` | O(n)*           |
+| `data1.extend(data2)`| O(n2)*          |
+| `data.reverse()`     | O(n)            |
+| `data.sort()`        | O(n log n)      |
+
+ `∗`: amortized (평균 시간)
+
+### 5.4.2 Python’s String Class
+
+문자열은 Python에서 불변의 문자 시퀸스이다. 
+리스트와 튜플처럼 많은 연산을 지원하지만, 불변성특징 때문에 여러가지 제약이 존재한다.
+
+- `capitalize`, `center`, `strip`과 우리가 주로 사용하는 문자열 연산 함수는 새 문자열을 생성해야 하기 때문에, 선형 시간 복잡도 O(n)가 소요된다.
+- 불리언 메서드(`islower` 등)와 비교 연산자(`==`, `<`)도 일반적으로 O(n) 시간에 실행되지만, 일찍 결정될 수 있다면 더 빠르게 종료할 수 있습니다.
+
+#### 패턴 매칭
+
+문자열 내에서 substring 또는 패턴을 찾는 것은 문자열(`n`)과 패턴(`m`)의 길이에 따라 달라지게 된다.
+- 단순한 패턴 매칭 구현은 $O(mn)$ 시간에 실행된다.
+- 하지만, 추후 13장에서 배우는 알고리즘을 통해 특정한 문자열 매칭의 경우는 $O(n)$ 시간으로 줄여버릴 수 있다.
+
+#### 문자열 구성
+
+단순히 반복문을 통해 (`letters += c`)을 사용하는 것은 매우 비효율적이며 O(n^2) 시간 복잡도를 가지게 된다. 하지만, 리스트 컴프리헨션 또는 `join`을 사용하여 효율적으로 구성할 수 있다.
+
+다음은 문자열을 효율적으로 구성하는 방법입니다:
+```python
+temp = []
+for character in document:
+    if character.isalpha():
+        temp.append(character)
+letters = ''.join(temp)
+```
+이 방법을 사용해서 선형 시간 복잡도 O(n)를 보장할 수 있다.
 
 # 5.5 Using Array-Based Sequences
 ## 5.5.1 Storing High Scores for a Game
