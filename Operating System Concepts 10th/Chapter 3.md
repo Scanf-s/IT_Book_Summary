@@ -181,5 +181,201 @@ Parent process로부터 생성된 프로세스를 `Child process`라고 부른�
 
 ### 예제 1.
 ```c
+#include <stdio.h> // 표준 입출력 함수를 사용하기 위한 헤더 파일
+#include <unistd.h> // fork() 함수 등을 사용하기 위한 헤더 파일
+
+int main() { // 프로그램의 진입점, 부모 프로세스가 실행됨
+    pid_t pid; // 프로세스 ID를 저장할 변수 선언
+    pid = fork(); // fork() 호출을 통해 자식 프로세스를 생성. 반환 값은 pid 변수에 저장됨
+
+    // fork()는 부모 프로세스와 자식 프로세스 모두에서 반환됩니다.
+    // 부모 프로세스에서는 자식의 PID를 반환하고, 자식 프로세스에서는 0을 반환합니다.
+
+    printf("Hello process! %d\n", pid); // fork()의 반환 값인 pid를 출력
+    // 부모 프로세스와 자식 프로세스가 각각 이 줄을 실행하게 됨
+    // 부모 프로세스에서는 자식의 PID가 출력되고, 자식 프로세스에서는 0이 출력됨
+}
+```
+
+### 예제 2.
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+    pid_t pid;
+    pid = fork();
+
+    if (pid > 0) // 자식 프로세스가 정상적으로 생성되었다면, 부모 프로세스는 자식 프로세스가 끝날 때까지 대기
+        wait(NULL);
+
+    // 자식 프로세스는 pid가 0이고, 부모 프로세스는 자식 프로세스의 실제 pid를 출력
+    printf("Hello, Process! %d\n", pid);
+
+    // 부모 프로세스는 wait 후에 이 줄을 실행하게 되므로 자식 프로세스의 실제 pid를 출력
+    // 자식 프로세스는 pid가 0을 출력하고 종료
+}
+```
+
+### 예제 3.
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int value = 5; // 전역 변수 선언
+
+int main()
+{
+    pid_t pid;
+    pid = fork();
+    
+    if (pid == 0) { // 자식 프로세스
+        value += 15; // 자식 프로세스는 value 값을 15 증가시킴
+        return 0; // 자식 프로세스 종료
+    }
+    else if (pid > 0) { // 부모 프로세스
+        wait(NULL); // 자식 프로세스가 끝날 때까지 대기
+        printf("Parent: value = %d\n", value); // 부모 프로세스에서 value 값을 출력
+    }
+}
+```
+
+### 예제 4.
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+/*
+* How many processes are created?
+*/
+int main() // 일단 부모 프로세스가 생성됨 (1개)
+{
+    fork(); // 첫 번째 fork() 호출: 부모 프로세스가 자식 프로세스를 생성함 (2개)
+    fork(); // 두 번째 fork() 호출: 각 프로세스(부모와 자식)가 다시 자식 프로세스를 생성함 (4개)
+    fork(); // 세 번째 fork() 호출: 각 프로세스가 다시 자식 프로세스를 생성함 (8개)
+    // 따라서, 총 8개의 프로세스가 생성된다.
+    return 0;
+}
 
 ```
+
+### 예제 5.
+```c
+#include <stdio.h>
+#include <unistd.h>
+/*
+* How many processes are created?
+*/
+int main()
+{
+	int i;
+	for (i = 0; i < 4; i++)
+		fork(); // 예제 4에서와 마찬가지로, 4회 fork()하면 16개 생성됨
+	return 0;
+}
+```
+
+### 예제 6.
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main()
+{
+    pid_t pid;
+    pid = fork();
+    if (pid == 0) { // 자식 프로세스인 경우
+        execlp("/bin/ls", "ls", NULL); // "/bin/ls" 파일의 ls 명령을 실행. 성공하면 프로세스 이미지가 교체되어 아래 코드가 실행되지 않음.
+        // execlp가 성공적으로 호출되면 현재 프로세스 이미지가 "/bin/ls"로 대체되므로 다음 라인은 실행되지 않음
+        printf("LINE J\n"); // execlp 호출이 실패한 경우에만 실행됨
+    }
+    else if (pid > 0) { // 부모 프로세스인 경우
+        wait(NULL); // 자식 프로세스가 끝날 때까지 대기
+        printf("Child Complete\n"); // 자식 프로세스가 완료된 후 출력
+    }
+    return 0;
+}
+```
+
+![](https://velog.velcdn.com/images/calzone0404/post/fc53ac87-37bc-4a64-a822-81dbbf30d856/image.png)
+
+### 예제 7.
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main()
+{
+    pid_t pid, pid1;
+    pid = fork(); // 새로운 프로세스를 생성
+    
+    if (pid == 0) { // 자식 프로세스
+        pid1 = getpid(); // 자식 프로세스의 PID를 가져옴
+        printf("child: pid = %d\n", pid); // A: pid는 fork()의 반환 값으로, 자식 프로세스에서는 0
+        printf("child: pid1 = %d\n", pid1); // B: 자식 프로세스의 실제 PID 출력
+    }
+    else if (pid > 0) { // 부모 프로세스
+        pid1 = getpid(); // 부모 프로세스의 PID를 가져옴
+        printf("parent: pid = %d\n", pid); // C: pid는 자식 프로세스의 PID
+        printf("parent: pid1 = %d\n", pid1); // D: 부모 프로세스의 실제 PID 출력
+        wait(NULL); // 자식 프로세스가 종료될 때까지 대기
+    }
+    return 0;
+}
+
+```
+
+> wait()이 아래에 있어서 부모가 먼저 실행되고, 자식이 실행된다.
+
+![](https://velog.velcdn.com/images/calzone0404/post/970e04b6-e50a-4f19-aad5-1238a6e2e603/image.png)
+
+### 예제 8.
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+#define SIZE 5
+int nums[SIZE] = {0, 1, 2, 3, 4}; // 전역 배열 선언 및 초기화
+
+int main()
+{
+    pid_t pid;
+    int i;
+    pid = fork();
+
+    if (pid == 0) { // 자식 프로세스
+        for (i = 0; i < SIZE; i++) {
+            nums[i] *= i; // 자식 프로세스에서 배열의 각 요소를 해당 인덱스 값으로 곱함
+            printf("CHILD: %d \n", nums[i]); // 변경된 값을 출력
+        }
+    }
+    else if (pid > 0) { // 부모 프로세스
+        wait(NULL); // 자식 프로세스가 종료될 때까지 대기
+        for (i = 0; i < SIZE; i++) {
+            printf("PARENT: %d \n", nums[i]); // 부모 프로세스는 초기 값 출력 (0, 1, 2, 3, 4)
+        }
+    }
+
+    return 0;
+}
+```
+
+![](https://velog.velcdn.com/images/calzone0404/post/62876831-ef78-4701-9b1f-df236c5351f0/image.png)
+
+#### 자식 프로세스에서 변경한 배열의 내용이 부모에게 반영되지 않는 이유
+
+1. int nums[SIZE] = {0, 1, 2, 3, 4}로 전역 배열 nums가 초기화됨. 부모 프로세스와 자식 프로세스는 이 배열의 복사본을 각각 가지고 있음
+
+2. fork()를 호출해서 새로운 프로세스를 생성함.
+
+3. 자식 프로세스는 nums 배열의 각 요소를 해당 인덱스로 곱하고 그 결과를 출력함.
+이때 자식 프로세스는 자신만의 메모리 공간에서 배열의 복사본에다만 수정작업을 함. 따라서 부모 프로세스의 배열에는 영향을 미치지 않는것임
+
+4. 부모 프로세스는 wait(NULL)을 호출하여 자식 프로세스가 종료될 때까지 대기하고, 자식이 종료되면 부모 프로세스는 자신의 nums 배열을 그대로 유지하고, 초기 값을 출력함.
