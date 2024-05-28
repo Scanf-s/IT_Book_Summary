@@ -379,3 +379,104 @@ int main()
 이때 자식 프로세스는 자신만의 메모리 공간에서 배열의 복사본에다만 수정작업을 함. 따라서 부모 프로세스의 배열에는 영향을 미치지 않는것임
 
 4. 부모 프로세스는 wait(NULL)을 호출하여 자식 프로세스가 종료될 때까지 대기하고, 자식이 종료되면 부모 프로세스는 자신의 nums 배열을 그대로 유지하고, 초기 값을 출력함.
+
+
+# 3.4 Interprocess Communication
+
+> IPC : Inter-Process Communication
+
+IPC란, Co-operating process들에서 사용하는 메커니즘으로, Process들이 서로 데이터를 주고받는 것
+
+# 3.5 IPC in Shared-Memory Systems
+
+# 3.6 IPC in Message-Passing Systems
+
+# 3.7 Examples of IPC Systems
+## POSIX shared memory
+
+### Shared memory producer
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+
+int main(){
+    const int SIZE = 4096;
+    const char *name = "OS";
+    const char *message_0 = "Hello, ";
+    const char *message_1 = "Shared Memory!\n";
+
+    int shm_fd; // 공유 메모리 객체를 위한 파일 설명자
+    char *ptr; // 공유 메모리 영역을 가리키는 포인터
+
+    // shm_open() : 공유 메모리 객체를 생성하거나 열기 위해 사용
+    shm_fd = shm_open(name, O_CREAT | O_RDWR, 0666);
+    /*
+     * name: 공유 메모리 객체의 이름
+     * O_CREAT | O_RDWR: 객체를 생성하고 읽기/쓰기 모드로 열기 위한 플래그
+     * 0666: 파일 권한 설정 (읽기 및 쓰기 권한 부여)
+     */
+
+    // ftruncate() : 공유 메모리 객체의 크기를 SIZE로 설정 (4096 바이트)
+    ftruncate(shm_fd, SIZE);
+
+    // mmap : 공유 메모리 객체를 프로세스의 주소 공간에 매핑
+    ptr = (char *)mmap(0, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    /*
+     * 0: 매핑할 주소를 시스템이 자동으로 선택하도록 함
+     * SIZE: 매핑할 크기
+     * PROT_READ | PROT_WRITE: 읽기 및 쓰기 권한 설정
+     * MAP_SHARED: 다른 프로세스와 메모리를 공유
+     * shm_fd: 매핑할 파일 설명 데이터 (file description)
+     * 0: 파일 오프셋
+     */
+
+    // sprintf를 이용해서 공유 메모리 영역에 message_0와 message_1을 순차적으로 씀
+    sprintf(ptr, "%s", message_0);
+    ptr += strlen(message_0); // 첫 번째 메시지의 길이만큼 포인터를 이동
+    sprintf(ptr, "%s", message_1);
+    ptr += strlen(message_1); // 두 번째 메시지의 길이만큼 포인터를 이동
+
+    return 0;
+}
+```
+
+### Shared memory consumer
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
+int main(){
+    const int SIZE = 4096;
+    const char *name = "OS";
+
+    int shm_fd;
+    char *ptr;
+
+    // 공유 메모리 객체를 읽기 전용 모드로 염
+    shm_fd = shm_open(name, O_RDONLY, 0666);
+    // O_RDONLY: 읽기 전용 모드로 열기 위한 플래그
+
+    ptr = (char *)mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
+
+    printf("%s", (char*)ptr);
+    // 공유 메모리에서 읽은 문자열을 표준 출력(콘솔)에 출력
+
+    // 공유 메모리 객체를 시스템에서 삭제
+    shm_unlink(name);
+    
+    return 0;
+}
+```
+
+### Run shm sources
+
+![](https://velog.velcdn.com/images/calzone0404/post/1471f14f-c3a1-4721-96d5-7f4042cce982/image.png)
+
+# 3.8 Communication in Client-Server Systems
