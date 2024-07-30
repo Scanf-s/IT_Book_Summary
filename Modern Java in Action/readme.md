@@ -1,5 +1,9 @@
+# Modern Java in Action (Korean)
+
+![image](https://github.com/user-attachments/assets/3228dc20-e124-48a0-90a6-3f878588f488)
+
 # 참고
-해당 내용을 이해하는데 많은 어려움을 겪어서 Chat GPT 4o를 활용하여 이해한 내용을 정리했습니다.  
+해당 내용을 이해하는데 많은 어려움을 겪어서 Chat GPT 4o를 활용하여 공부하고, 이해한 내용을 정리했습니다.  
 따라서 주로 ChatGPT가 생성해준 내용을 토대로 작성되었으므로 이상한 부분이 있을 수 있습니다.
 
 Chat GPT 사용 시 제공한 프롬프트는 다음과 같습니다.
