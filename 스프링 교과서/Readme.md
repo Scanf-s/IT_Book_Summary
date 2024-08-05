@@ -1,1 +1,1 @@
-![https://image.yes24.com/goods/126680333/XL](https://image.yes24.com/goods/126680333/XL)
+![image](https://github.com/user-attachments/assets/e08b65d2-f502-4539-9089-c8a441917313)
