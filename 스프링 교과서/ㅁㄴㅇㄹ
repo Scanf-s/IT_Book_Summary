@@ -1,0 +1,344 @@
+## 4.1 계약 정의를 위한 인터페이스 사용
+
+### 4.1.1 구현 분리를 위해 인터페이스 사용
+우버 앱을 사용하는 경우, 다른 부가적인 상황을 제외하고 간단한 상황을 생각해보자. 즉, 사용자는 단순히 목적지까지만 이동하는 것을 원한다고 해보자. 사용자 입장에서, 자신은 목적지까지만 이동하면 되기 때문에 우버를 통해 호출한 자동차가 무엇이던지, 운전자가 누구인지, 시간이 얼마나 걸리던지 상관할 바가 아니다. 단순히 사용자는 목적지까지만 이동하면 되기 때문이다.
+
+Java의 객체와 인터페이스의 관계도 이와 비슷하다. 어떤 인터페이스를 구현한 객체가 무엇이든, 사용하는 입장에서는 자신이 원하는 기능만 정상적으로 수행되면 된다. 인터페이스는 외부에 제공되는 기능을 정의하고, 구체적인 구현은 숨기기 때문에 내부 구현을 신경 쓸 필요가 없다.
+
+예를 들어, DeliveryDetailsPrinter 객체가 배송 정보를 프린트할 때, Sort를 통해 특정 기준으로 정렬 후 출력하기를 원한다고 해보자. 만약 Sort 관련 클래스가 인터페이스가 아닌 일반 클래스라면, 요구 사항이 변경되었을 경우 이를 사용하는 부분을 일일이 찾아가 수정해야 하는 번거로움이 있다. 이때, 인터페이스를 사용할 수 있다. Sort 인터페이스를 DeliveryDetailsPrinter에 적용하면, 이를 구현하는 구체적인 클래스가 어떤 것이든 상관하지 않아도 된다.
+
+이렇게 인터페이스를 사용하면 코드의 유연성과 확장성이 높아지며, 유지보수가 용이해진다. 요구사항이 변해도 인터페이스만 충족하면 다른 구현체로 쉽게 대체할 수 있는 것이다.
+
+### 4.1.2 시나리오 요구 사항
+
+> 팀 업무 관리용 앱
+	- 댓글 기능
+    - 댓글 DB 저장 and 이메일 알림 발송
+
+이를 효율적으로 구현하기 위해서는 올바른 책임과 추상화를 설계해야 한다.
+
+### 4.1.3 Spring 없이 자바로만 구현하는 경우
+
+- 댓글을 다는 서비스 객체인 `CommentService`에는 `publishComment` 함수가 있다.
+
+- 이메일을 발송하는 서비스 객체인 `CommentNotificationProxy`에는 `sendComment()` 함수가 있다.
+
+- DB에 저장해주는 서비스 객체인 `CommentRepository`에는 `storeComment` 함수가 있다.
+
+이때, `CommentService`객체에서는 `sendComment`함수와, `storeComment`함수를 사용해야 한다.
+
+그런데, 추상화가 적용되지 않은 상태에서 결합을 해버리는 경우 추후 있을 비즈니스 로직 변경사항에 매우 취약하다. 즉, 다시 싹 갈아엎어야 한다고 이해하면 된다.
+
+따라서, 인터페이스를 생성해서 구현체를 분리해주는게 좋다.
+
+> CommentRepository, CommentNotificationProxy 객체를 interface로 선언하고 이를 구현하는 구현체를 따로 두는게 매우 좋은 습관이라고 한다.
+
+#### POJO 클래스
+> 의존성이 없는 단순한 객체
+
+댓글이 저장될 데이터베이스를 실제 DB가 아닌 메모리에 저장하도록 관련 클래스를 구현해보도록 하자.
+
+```java
+public class Comment {
+	private String author; // 댓글 작성자
+    private String text; // 댓글 내용
+    
+    getters, setters...
+}
+```
+
+#### 인터페이스 및 구현체 생성
+위 POJO를 저장해주는 레포지토리를 만들어주면 된다.
+
+```java
+public interface CommentRepository{
+	void storeComment(Comment comment);
+}
+```
+```java
+public class MemoryCommentRepository implements CommentRepository{
+	@Override
+	void storeComment(Comment comment){
+    	sout("코멘트 저장함", + comment.getText());
+    }
+}
+```
+
+다음으로 이메일 발송해주는 객체를 구현하자
+```java
+public interface CommentNotificationProxy{
+	void sendComment(Comment comment);
+}
+```
+
+```java
+public class EmailCommentNotificationProxy{
+	@Override
+	void sendComment(Comment comment){
+    	sout("이메일 발송함");
+    }
+}
+```
+
+#### 서비스를 사용하는 객체 생성
+
+어떤 사람이 댓글을 작성하는 "서비스"를 처리하는 객체를 생성하면 된다.
+
+```java
+public class CommentService{
+	
+    private final CommentRepo commentRepo; //귀찮아서 축약함
+    private final CommentNoti commentNoti;
+    
+    public CommentService(
+    	CommentRepo commentRepo,
+        CommentNoti commentNoti){
+        this.저장객체;
+        this.이메일객체;
+    }
+    
+    public void publishComment(Comment comment){
+        commentRepo.storeComment(comment);
+        commentNoti.sendComment(comment);
+    }
+}
+```
+
+#### 서비스 사용
+
+이제 이렇게 구현된 서비스를 사용하려면 메인에서 CommentService, CommentRepo, CommentNoti같은 객체를 일일히 선언하고, 오버라이딩한 함수가 구현된 객체로 생성하여 의존성을 설정해주어야 한다.
+
+## 4.2 추상화와 DI
+
+4.1에서 쌩 Java로 구현한 것 위에 이제 Spring을 넣게 된다. 자바로 작성된 코드에서 상당 부분의 코드를 줄일 수 있게 된다.
+
+### 4.2.1 Spring context에 어떤 객체를 넣어야 하는가?
+
+> 이 객체를 Framework에서 관리해야 하는가? 에 대한 답변이 Yes -> Context에 넣는다.
+
+예를 들어, `CommentService`는 의존성이 2개가 존재하므로 Framework에서 관리하는 게 좋다. `MemoryCommentRepository`와 `EmailCommentNotificationProxy`는 인터페이스를 상속받는 의존성이 존재하므로 마찬가지로 Framework에서 관리하는 게 좋다.
+
+> POJO인 Comment 객체를 Context에 추가하지 않는 이유? -> 굳이 의존성도 존재하지 않고 넣어도 상관은 없는데 복잡해지는 상황을 만들기보다는 그대로 두는 게 더 나으니까.
+
+> Interface 자체는 추상적이므로 Context에 넣지 않는다.
+
+#### ComponentScan 사용하기
+
+```java
+@Component
+public class EmailCommentNotificationProxy implements CommentNotificationProxy {
+    @Override
+    public void sendComment(Comment comment) {
+        System.out.println("이메일 발송함");
+    }
+}
+```
+
+```java
+@Component
+public class MemoryCommentRepository implements CommentRepository {
+    @Override
+    public void storeComment(Comment comment) {
+        System.out.println("코멘트 저장함: " + comment.getText());
+    }
+}
+```
+
+```java
+@Component
+public class CommentService {
+    private final CommentRepository commentRepo; // 귀찮아서 축약함
+    private final CommentNotificationProxy commentNoti;
+
+    public CommentService(CommentRepository commentRepo, CommentNotificationProxy commentNoti) {
+        this.commentRepo = commentRepo;
+        this.commentNoti = commentNoti;
+    }
+
+    public void publishComment(Comment comment) {
+        commentRepo.storeComment(comment);
+        commentNoti.sendComment(comment);
+    }
+}
+```
+
+> `CommentService`에 있는 @Autowired는 선택 사항이다. `CommentRepository`, `CommentNotificationProxy`에 만약 생성자가 2개 이상 존재한다면 반드시 @Autowired를 넣어주어야 한다. @Autowired를 넣으면 물론 `CommentService`에 있는 생성자는 필요 없고, @Bean으로 설정해주면 된다.
+
+#### ProjectConfig 클래스 생성
+
+```java
+@Configuration
+@ComponentScan(basePackages = "com.sullung")
+public class ProjectConfiguration {}
+```
+
+#### 이제 메인에서 사용해보자
+
+4.1절에서 했던 것과 달리 context만 선언해서 의존성을 주입해주기만 하면 된다.
+
+```java
+var context = new AnnotationConfigApplicationContext(ProjectConfiguration.class);
+
+var comment = new Comment();
+// 각종 comment 속성 설정...
+
+var commentService = context.getBean(CommentService.class);
+commentService.publishComment(comment);
+```
+
+### 4.2.2 추상화에 대한 여러 구현체 중에서 오토와이어링할 것 선택
+
+어떤 경우에는 여러 구현체가 존재할 수 있으며, 그 중 하나를 기본적으로 사용하거나 특정 상황에서 다른 구현체를 선택해야 할 수 있다. 예를 들어, 이메일 발송 서비스를 푸시 알람 서비스로 변경하고자 할 때, 단순히 @Component만 사용하면 충돌이 발생할 수 있다. 이때, Spring의 @Primary와 @Qualifier를 사용하여 구현체를 선택해야 한다.
+
+- **@Primary**: 여러 개의 빈 후보 중에서 기본적으로 사용할 구현체를 지정.
+- **@Qualifier**: 특정 빈을 명시적으로 선택할 때 사용.
+
+#### 예시
+
+1. **인터페이스 정의**
+
+```java
+public interface NotificationProxy {
+    void sendNotification(Comment comment);
+}
+```
+
+2. **구현체 1: 이메일 알림 서비스**
+
+```java
+@Component
+public class EmailNotificationProxy implements NotificationProxy {
+    @Override
+    public void sendNotification(Comment comment) {
+        System.out.println("이메일 발송함: " + comment.getText());
+    }
+}
+```
+
+3. **구현체 2: 푸시 알림 서비스 (Primary 설정)**
+
+```java
+@Component
+@Primary
+public class PushNotificationProxy implements NotificationProxy {
+    @Override
+    public void sendNotification(Comment comment) {
+        System.out.println("푸시 알림 발송함: " + comment.getText());
+    }
+}
+```
+
+위 코드에서는 `PushNotificationProxy` 클래스가 @Primary로 설정되어 있어, NotificationProxy 인터페이스를 자동 주입할 때 기본적으로 이 구현체가 사용된다.
+
+4. **서비스 클래스에서 구현체 사용**
+
+```java
+@Component
+public class CommentService {
+    private final NotificationProxy notificationProxy;
+
+    public CommentService(NotificationProxy notificationProxy) {
+        this.notificationProxy = notificationProxy;
+    }
+
+    public void publishComment(Comment comment) {
+        // 코멘트를 저장하는 로직
+        System.out.println("코멘트 저장함: " + comment.getText());
+        // 알림 발송
+        notificationProxy.sendNotification(comment);
+    }
+}
+```
+
+5. **@Qualifier를 사용하여 특정 구현체 지정**
+
+```java
+@Component
+public class CustomCommentService {
+    private final NotificationProxy notificationProxy;
+
+    // @Qualifier를 사용하여 명시적으로 구현체 선택
+    public CustomCommentService(@Qualifier("emailNotificationProxy") NotificationProxy notificationProxy) {
+        this.notificationProxy = notificationProxy;
+    }
+
+    public void publishComment(Comment comment) {
+        // 코멘트를 저장하는 로직
+        System.out.println("코멘트 저장함: " + comment.getText());
+        // 이메일 알림 발송
+        notificationProxy.sendNotification(comment);
+    }
+}
+```
+
+위의 `CustomCommentService` 클래스에서는 @Qualifier를 사용하여 `EmailNotificationProxy`를 명시적으로 지정하여 사용할 수 있다.
+
+알겠습니다. 기존의 말투를 유지하면서 예시를 포함해 설명을 다시 작성해 드리겠습니다.
+
+---
+
+## 4.3 스테레오타입 Annotation으로 객체의 책임에 집중하기
+
+여태까지는 모든 ComponentScan 대상에 `@Component` annotation을 붙였는데, 이제부터 책임에 집중하기 위해 `@Service`, `@Repository` annotation을 붙여주는 게 좋다. 이렇게 하면 다른 개발자들이 봤을 때 해당 클래스의 역할 및 책임이 무엇인지 단번에 파악할 수 있다.
+
+즉, `CommentService`는 댓글을 달아주는 서비스이므로 `@Service` annotation을 붙여주고, DB에 저장하는 것과 같은 `Repository` 클래스에는 `@Repository`를 달아주면 된다.
+
+### 스테레오타입 애노테이션 사용 예시
+
+1. **서비스 클래스에 @Service 사용**
+
+```java
+import org.springframework.stereotype.Service;
+
+@Service
+public class CommentService {
+    private final CommentRepository commentRepository;
+    private final NotificationProxy notificationProxy;
+
+    public CommentService(CommentRepository commentRepository, NotificationProxy notificationProxy) {
+        this.commentRepository = commentRepository;
+        this.notificationProxy = notificationProxy;
+    }
+
+    public void publishComment(Comment comment) {
+        commentRepository.storeComment(comment);
+        notificationProxy.sendNotification(comment);
+    }
+}
+```
+
+- `@Service`는 주로 비즈니스 로직을 담당하는 클래스에 붙여 사용하면 되고, 이 클래스가 서비스 역할을 한다는 것을 명확하게 나타낸다.
+
+2. **저장소 클래스에 @Repository 사용**
+
+```java
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class MemoryCommentRepository implements CommentRepository {
+    @Override
+    public void storeComment(Comment comment) {
+        System.out.println("코멘트 저장함: " + comment.getText());
+    }
+}
+```
+
+- `@Repository`는 데이터 액세스를 담당하는 클래스에 붙여 사용하면 된다.
+
+3. **애플리케이션 설정 클래스**
+
+```java
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan(basePackages = "com.example")
+public class ProjectConfiguration {
+}
+```
+
+### 정리
+
+- **@Service**: 비즈니스 로직을 처리하는 클래스에 붙이며, 클래스가 서비스 역할을 담당한다는 것을 나타냄.
+- **@Repository**: 데이터베이스와 상호작용하는 클래스에 붙여 데이터 액세스를 담당한다는 것을 나타냄.
+- **@Component**: 특정 역할에 구애받지 않는 일반적인 빈을 정의할 때 사용.
