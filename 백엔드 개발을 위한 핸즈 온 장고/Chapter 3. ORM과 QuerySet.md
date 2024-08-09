@@ -900,6 +900,8 @@ class Book(models.Model):
 author.books.all()  # book_set 대신 books 사용
 ```
 
+> 책에서는 related_name을 직접 설정하기 보다, 자동으로 생성된 *_set을 사용하는것을 권장한다.
+
 #### filter() 조건과의 관계
 
 관계 매니저는 일반 매니저와 마찬가지로 `filter()`, `exclude()` 등의 메서드를 지원한다.
