@@ -312,9 +312,9 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 3. `write_only` 필드는 생성(`create()`)이나 수정(`update()`) 메서드에서 적절히 처리해야한다.
 
-### Serializer 자세한 사용 예시
+## Serializer 자세한 사용 예시
 
-#### models.py
+### models.py
 ```python
 from django.db import models
 from django.contrib.auth.models import User
@@ -371,7 +371,7 @@ class Review(models.Model):
         return f"Review for {self.book.title} by {self.reviewer.username}"
 ```
 
-#### serializers.py
+### serializers.py
 ```python
 from rest_framework import serializers
 from django.contrib.auth.models import User
