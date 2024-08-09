@@ -744,7 +744,265 @@ print(f"Number of books: {book_count}")
 
 따라서, Django에서는 큰 데이터셋의 경우 `len()` 대신 `count()`를 사용하는 것을 권장한다. 이는 메모리 사용량을 줄이고 성능을 향상시키는 데 도움이 된다.
 
-# 3.5 트랜잭션 관리
-# 3.6 매니저
-# 3.7 관계 매니저
-# 3.8 DB 라우터: 멀티 데이터베이스 관리
+# 3.6 Django ORM Manager
+
+Django ORM(Object-Relational Mapping)에서 Manager는 데이터베이스 쿼리 작업의 인터페이스 역할을 한다. 모든 Django 모델은 최소한 하나의 Manager를 가지고 있다.
+
+## 3.6.1 Manager의 역할
+
+Manager는 데이터베이스와 모델 클래스 사이의 쿼리 작업을 처리한다. 기본적으로 Django는 모든 모델에 'objects'라는 이름의 Manager를 자동으로 추가한다.
+
+### UserManager 예시
+
+```python
+from django.contrib.auth.models import BaseUserManager
+
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('이메일은 필수입니다.')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        return self.create_user(email, password, **extra_fields)
+```
+
+이 예시에서 `UserManager`는 사용자 생성과 관련된 로직을 캡슐화한다.
+
+### 커스텀 정의 Manager 예시
+
+```python
+from django.db import models
+
+class PublishedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status='published')
+
+class Article(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    status = models.CharField(max_length=10, choices=(
+        ('draft', 'Draft'),
+        ('published', 'Published'),
+    ))
+    objects = models.Manager()  # 기본 매니저
+    published = PublishedManager()  # 커스텀 매니저
+
+# 사용 예:
+# Article.objects.all()  # 모든 게시글
+# Article.published.all()  # 발행된 게시글만
+```
+
+이 예시에서는 `PublishedManager`를 정의하여 발행된 게시글만 필터링하는 기능을 추가했다.
+
+## 3.6.2 Manager 작성 시 주의해야 하는 사항
+
+1. 매니저 내부에 정의된 함수는 반드시 재사용 가능해야 한다.
+
+```python
+class BookManager(models.Manager):
+    def get_bestsellers(self, category=None):
+        queryset = self.filter(sales__gt=1000)
+        if category:
+            queryset = queryset.filter(category=category)
+        return queryset
+
+# 잘못된 예:
+# def get_bestsellers(self):
+#     return self.filter(sales__gt=1000, category='fiction')
+```
+
+2. 모델 관점에서 인간 친화적인 의미가 있어야 한다.
+
+```python
+class StudentManager(models.Manager):
+    def honor_roll(self):
+        return self.filter(gpa__gte=3.5)
+
+# 사용 예:
+# Student.objects.honor_roll()
+```
+
+3. 매니저로 사용할 커스텀 쿼리셋 구현 시 커스텀 쿼리셋 내부에서 쿼리셋이 함부로 풀리면 안 된다.
+
+```python
+from django.db import models
+
+class CustomQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_active=True)
+
+    def inactive(self):
+        return self.filter(is_active=False)
+
+class CustomManager(models.Manager):
+    def get_queryset(self):
+        return CustomQuerySet(self.model, using=self._db)
+
+    def active(self):
+        return self.get_queryset().active()
+
+    def inactive(self):
+        return self.get_queryset().inactive()
+
+class MyModel(models.Model):
+    name = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
+
+    objects = CustomManager()
+```
+
+이 예시에서 `CustomQuerySet`은 쿼리셋 메서드를 정의하고, `CustomManager`는 이를 사용한다. 이렇게 함으로써 쿼리셋이 불필요하게 실행되는 것을 방지할 수 있다.
+
+# 3.7 RelatedManager
+
+## 3.7.1 관계 매니저란?
+
+RelatedManager는 Django에서 모델 간의 관계(예: ForeignKey, ManyToManyField)를 관리하는 데 사용되는 특별한 종류의 Manager이다. 이를 통해 관련 객체들을 쉽게 조작할 수 있다.
+
+### create(*args)
+
+`create()` 메서드는 관련 객체를 생성하고 현재 객체와 연결한다.
+
+```python
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
+
+# 사용 예:
+author = Author.objects.create(name="J.K. Rowling")
+book = author.books.create(title="Harry Potter and the Philosopher's Stone")
+```
+
+### add(*objs)
+
+`add()` 메서드는 이미 존재하는 객체를 현재 객체와 연결한다.
+
+```python
+author = Author.objects.get(name="J.K. Rowling")
+book1 = Book.objects.create(title="Harry Potter and the Chamber of Secrets")
+book2 = Book.objects.create(title="Harry Potter and the Prisoner of Azkaban")
+
+author.books.add(book1, book2)
+```
+
+#### Bulk insert란 무엇인가?
+
+Bulk insert는 여러 객체를 한 번에 데이터베이스에 삽입하는 기술이다. Django의 `bulk_create()` 메서드를 사용하면 이를 구현할 수 있다.
+
+```python
+books = [
+    Book(title="Book 1", author=author),
+    Book(title="Book 2", author=author),
+    Book(title="Book 3", author=author),
+]
+Book.objects.bulk_create(books)
+```
+
+이 방법은 여러 객체를 생성할 때 데이터베이스 쿼리 수를 줄여 성능을 향상시킨다.
+
+### set(objs: List[Model], clear=False)
+
+`set()` 메서드는 관련 객체 목록을 완전히 대체한다.
+
+```python
+author = Author.objects.get(name="J.K. Rowling")
+new_books = [
+    Book.objects.create(title="Fantastic Beasts and Where to Find Them"),
+    Book.objects.create(title="The Casual Vacancy")
+]
+author.books.set(new_books)
+```
+
+### remove(*objs), clear()
+
+`remove()` 메서드는 특정 객체들을 관계에서 제거하고, `clear()` 메서드는 모든 관련 객체를 제거한다.
+
+```python
+author = Author.objects.get(name="J.K. Rowling")
+book_to_remove = Book.objects.get(title="The Casual Vacancy")
+author.books.remove(book_to_remove)
+
+# 모든 책 제거
+author.books.clear()
+```
+
+# 3.8 DB 라우터: 멀티 데이터베이스를 관리하는 방법
+
+Django의 데이터베이스 라우터는 여러 데이터베이스를 효과적으로 관리할 수 있게 해주는 기능이다.
+
+## 3.8.1 데이터베이스를 Primary/Replica architecture로 구성 시 더 많은 트래픽을 받을 수 있는 원리
+
+Primary/Replica (또는 Master/Slave) 아키텍처는 데이터베이스의 읽기와 쓰기 작업을 분리하여 처리하는 방식이다. 
+
+1. Primary 데이터베이스: 모든 쓰기 작업을 처리한다.
+2. Replica 데이터베이스: Primary의 데이터를 복제하여 읽기 작업을 처리한다.
+
+이 구조의 장점:
+- 읽기 작업의 부하 분산
+- 높은 가용성
+- 데이터 백업 용이성
+
+## 3.8.2 Django에서 설정하는 방법
+
+Django에서 Primary/Replica 구조를 설정하려면 다음 단계를 따른다:
+
+1. `settings.py`에 데이터베이스 설정 추가:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'primary_db',
+        'USER': 'user',
+        'PASSWORD': 'password',
+        'HOST': 'primary.example.com',
+    },
+    'replica': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'replica_db',
+        'USER': 'user',
+        'PASSWORD': 'password',
+        'HOST': 'replica.example.com',
+    }
+}
+```
+
+2. 데이터베이스 라우터 클래스 생성:
+
+```python
+class PrimaryReplicaRouter:
+    def db_for_read(self, model, **hints):
+        return 'replica'
+
+    def db_for_write(self, model, **hints):
+        return 'default'
+
+    def allow_relation(self, obj1, obj2, **hints):
+        return True
+
+    def allow_migrate(self, db, app_label, model_name=None, **hints):
+        return True
+```
+
+3. `settings.py`에 라우터 설정 추가:
+
+```python
+DATABASE_ROUTERS = ['path.to.PrimaryReplicaRouter']
+```
+
+이렇게 설정하면 Django는 읽기 작업은 Replica 데이터베이스로, 쓰기 작업은 Primary 데이터베이스로 자동 라우팅한다.
+
+주의사항:
+- Replica 데이터베이스의 데이터가 Primary와 완전히 동기화되어 있어야 한다.
+- 트랜잭션 내에서 읽기와 쓰기가 혼합된 경우, 모든 작업이 Primary 데이터베이스로 라우팅될 수 있다.
