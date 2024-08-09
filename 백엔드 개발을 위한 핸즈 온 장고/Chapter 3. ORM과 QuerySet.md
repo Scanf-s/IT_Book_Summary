@@ -861,15 +861,66 @@ class MyModel(models.Model):
 
 이 예시에서 `CustomQuerySet`은 쿼리셋 메서드를 정의하고, `CustomManager`는 이를 사용한다. 이렇게 함으로써 쿼리셋이 불필요하게 실행되는 것을 방지할 수 있다.
 
-# 3.7 RelatedManager
+## 3.7 RelatedManager
 
-## 3.7.1 관계 매니저란?
+### 3.7.1 관계 매니저란?
 
-RelatedManager는 Django에서 모델 간의 관계(예: ForeignKey, ManyToManyField)를 관리하는 데 사용되는 특별한 종류의 Manager이다. 이를 통해 관련 객체들을 쉽게 조작할 수 있다.
+관계 매니저(RelatedManager)는 Django에서 모델 간의 관계를 다루는 데 사용되는 특별한 유형의 매니저이다. 주로 ForeignKey, ManyToManyField, OneToOneField와 같은 관계 필드에서 사용된다.
 
-### create(*args)
+#### *_set 속성
 
-`create()` 메서드는 관련 객체를 생성하고 현재 객체와 연결한다.
+Django는 관계의 "반대쪽" 모델에 자동으로 `*_set` 속성을 생성한다. 여기서 *는 모델의 소문자 이름이다.
+
+예시:
+```python
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+
+# 사용 예:
+author = Author.objects.get(name="J.K. Rowling")
+author_books = author.book_set.all()  # 이 작가의 모든 책
+```
+
+여기서 `book_set`은 자동으로 생성된 관계 매니저이다.
+
+#### related_name 사용
+
+`related_name` 매개변수를 사용하여 `*_set`의 이름을 커스터마이즈할 수 있다.
+
+```python
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
+
+# 사용 예:
+author.books.all()  # book_set 대신 books 사용
+```
+
+#### filter() 조건과의 관계
+
+관계 매니저는 일반 매니저와 마찬가지로 `filter()`, `exclude()` 등의 메서드를 지원한다.
+
+```python
+# 2000년 이후 출판된 책만 선택
+recent_books = author.books.filter(publication_year__gte=2000)
+
+# 페이지 수가 300 이상인 책 제외
+short_books = author.books.exclude(page_count__gte=300)
+```
+
+이러한 필터링은 데이터베이스 수준에서 수행되므로 효율적이다.
+
+### 3.7.2 관계 매니저와 다대다 관계 매니저 메서드
+
+관계 매니저는 관계 유형에 따라 다양한 메서드를 제공한다. 여기서는 주로 다대다(ManyToMany) 관계에서 사용되는 메서드를 설명하지만, 대부분은 일대다(ForeignKey) 관계에서도 사용할 수 있다.
+
+#### create(*args)
+
+`create()` 메서드는 관련 객체를 생성하고 현재 객체와 즉시 연결한다.
 
 ```python
 class Author(models.Model):
@@ -877,54 +928,58 @@ class Author(models.Model):
 
 class Book(models.Model):
     title = models.CharField(max_length=100)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
+    authors = models.ManyToManyField(Author, related_name='books')
 
 # 사용 예:
-author = Author.objects.create(name="J.K. Rowling")
-book = author.books.create(title="Harry Potter and the Philosopher's Stone")
+author = Author.objects.get(name="J.K. Rowling")
+new_book = author.books.create(title="Harry Potter and the Philosopher's Stone")
 ```
 
-### add(*objs)
+이 예시에서 `create()` 메서드는 새 Book 객체를 생성하고 자동으로 author와 연결한다.
+
+#### add(*objs)
 
 `add()` 메서드는 이미 존재하는 객체를 현재 객체와 연결한다.
 
 ```python
-author = Author.objects.get(name="J.K. Rowling")
-book1 = Book.objects.create(title="Harry Potter and the Chamber of Secrets")
-book2 = Book.objects.create(title="Harry Potter and the Prisoner of Azkaban")
+author1 = Author.objects.get(name="J.K. Rowling")
+author2 = Author.objects.get(name="George R.R. Martin")
+book = Book.objects.create(title="Collaborative Fantasy")
 
-author.books.add(book1, book2)
+book.authors.add(author1, author2)
 ```
 
-#### Bulk insert란 무엇인가?
+이 메서드는 여러 객체를 한 번에 추가할 수 있다.
 
-Bulk insert는 여러 객체를 한 번에 데이터베이스에 삽입하는 기술이다. Django의 `bulk_create()` 메서드를 사용하면 이를 구현할 수 있다.
+##### Bulk insert란 무엇인가?
+
+Bulk insert는 여러 객체를 한 번의 데이터베이스 쿼리로 삽입하는 기술이다. Django의 `bulk_create()` 메서드를 사용하면 이를 구현할 수 있다.
 
 ```python
 books = [
-    Book(title="Book 1", author=author),
-    Book(title="Book 2", author=author),
-    Book(title="Book 3", author=author),
+    Book(title="Book 1"),
+    Book(title="Book 2"),
+    Book(title="Book 3"),
 ]
-Book.objects.bulk_create(books)
+created_books = Book.objects.bulk_create(books)
+author.books.add(*created_books)
 ```
 
-이 방법은 여러 객체를 생성할 때 데이터베이스 쿼리 수를 줄여 성능을 향상시킨다.
+Bulk insert는 많은 객체를 생성할 때 데이터베이스 쿼리 수를 줄여 성능을 크게 향상시킬 수 있다.
 
-### set(objs: List[Model], clear=False)
+#### set(objs: List[Model], clear=False)
 
 `set()` 메서드는 관련 객체 목록을 완전히 대체한다.
 
 ```python
 author = Author.objects.get(name="J.K. Rowling")
-new_books = [
-    Book.objects.create(title="Fantastic Beasts and Where to Find Them"),
-    Book.objects.create(title="The Casual Vacancy")
-]
+new_books = Book.objects.filter(genre="Fantasy")
 author.books.set(new_books)
 ```
 
-### remove(*objs), clear()
+`clear=True` 옵션을 사용하면 기존 관계를 모두 제거하고 새로운 관계만 설정한다.
+
+#### remove(*objs), clear()
 
 `remove()` 메서드는 특정 객체들을 관계에서 제거하고, `clear()` 메서드는 모든 관련 객체를 제거한다.
 
