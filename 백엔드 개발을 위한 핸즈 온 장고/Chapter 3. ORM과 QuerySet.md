@@ -861,13 +861,13 @@ class MyModel(models.Model):
 
 이 예시에서 `CustomQuerySet`은 쿼리셋 메서드를 정의하고, `CustomManager`는 이를 사용한다. 이렇게 함으로써 쿼리셋이 불필요하게 실행되는 것을 방지할 수 있다.
 
-## 3.7 RelatedManager
+# 3.7 RelatedManager
 
-### 3.7.1 관계 매니저란?
+## 3.7.1 관계 매니저란?
 
 관계 매니저(RelatedManager)는 Django에서 모델 간의 관계를 다루는 데 사용되는 특별한 유형의 매니저이다. 주로 ForeignKey, ManyToManyField, OneToOneField와 같은 관계 필드에서 사용된다.
 
-#### *_set 속성
+### *_set 속성
 
 Django는 관계의 "반대쪽" 모델에 자동으로 `*_set` 속성을 생성한다. 여기서 *는 모델의 소문자 이름이다.
 
@@ -887,7 +887,7 @@ author_books = author.book_set.all()  # 이 작가의 모든 책
 
 여기서 `book_set`은 자동으로 생성된 관계 매니저이다.
 
-#### related_name 사용
+### related_name 사용
 
 `related_name` 매개변수를 사용하여 `*_set`의 이름을 커스터마이즈할 수 있다.
 
@@ -902,7 +902,7 @@ author.books.all()  # book_set 대신 books 사용
 
 > 책에서는 related_name을 직접 설정하기 보다, 자동으로 생성된 *_set을 사용하는것을 권장한다.
 
-#### filter() 조건과의 관계
+### filter() 조건과의 관계
 
 관계 매니저는 일반 매니저와 마찬가지로 `filter()`, `exclude()` 등의 메서드를 지원한다.
 
@@ -916,11 +916,11 @@ short_books = author.books.exclude(page_count__gte=300)
 
 이러한 필터링은 데이터베이스 수준에서 수행되므로 효율적이다.
 
-### 3.7.2 관계 매니저와 다대다 관계 매니저 메서드
+## 3.7.2 관계 매니저와 다대다 관계 매니저 메서드
 
 관계 매니저는 관계 유형에 따라 다양한 메서드를 제공한다. 여기서는 주로 다대다(ManyToMany) 관계에서 사용되는 메서드를 설명하지만, 대부분은 일대다(ForeignKey) 관계에서도 사용할 수 있다.
 
-#### create(*args)
+### create(*args)
 
 `create()` 메서드는 관련 객체를 생성하고 현재 객체와 즉시 연결한다.
 
@@ -939,7 +939,7 @@ new_book = author.books.create(title="Harry Potter and the Philosopher's Stone")
 
 이 예시에서 `create()` 메서드는 새 Book 객체를 생성하고 자동으로 author와 연결한다.
 
-#### add(*objs)
+### add(*objs)
 
 `add()` 메서드는 이미 존재하는 객체를 현재 객체와 연결한다.
 
@@ -953,7 +953,7 @@ book.authors.add(author1, author2)
 
 이 메서드는 여러 객체를 한 번에 추가할 수 있다.
 
-##### Bulk insert란 무엇인가?
+#### Bulk insert란 무엇인가?
 
 Bulk insert는 여러 객체를 한 번의 데이터베이스 쿼리로 삽입하는 기술이다. Django의 `bulk_create()` 메서드를 사용하면 이를 구현할 수 있다.
 
@@ -969,7 +969,7 @@ author.books.add(*created_books)
 
 Bulk insert는 많은 객체를 생성할 때 데이터베이스 쿼리 수를 줄여 성능을 크게 향상시킬 수 있다.
 
-#### set(objs: List[Model], clear=False)
+### set(objs: List[Model], clear=False)
 
 `set()` 메서드는 관련 객체 목록을 완전히 대체한다.
 
@@ -981,7 +981,7 @@ author.books.set(new_books)
 
 `clear=True` 옵션을 사용하면 기존 관계를 모두 제거하고 새로운 관계만 설정한다.
 
-#### remove(*objs), clear()
+### remove(*objs), clear()
 
 `remove()` 메서드는 특정 객체들을 관계에서 제거하고, `clear()` 메서드는 모든 관련 객체를 제거한다.
 
