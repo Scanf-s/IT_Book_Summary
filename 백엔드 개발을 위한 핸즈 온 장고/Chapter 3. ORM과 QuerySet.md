@@ -816,7 +816,7 @@ class BookManager(models.Manager):
 
 # 잘못된 예:
 # def get_bestsellers(self):
-#     return self.filter(sales__gt=1000, category='fiction')
+#     return self.filter(sales__gt=1000, category='fiction') # 카테고리가 하드코딩되어 있으므로 재사용성이 부족함!
 ```
 
 2. 모델 관점에서 인간 친화적인 의미가 있어야 한다.
